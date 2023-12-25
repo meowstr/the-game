@@ -10,7 +10,7 @@ build/main.html: ${SOURCES} ${HEADERS}
 		-sMAX_WEBGL_VERSION=2   \
 		-sUSE_GLFW=3            \
 		src/*.cpp               \
-		-o build/main.html
+		-o build/index.html
 
 
 bench:

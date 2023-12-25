@@ -81,7 +81,7 @@ static void loop()
     hsv_color_t hsv{
         (unsigned char) ( ( (int) ( time * 10 ) ) % 255 ),
         255,
-        (unsigned char) ( 128 + sin( time * 2.0f ) * 128 ) };
+        (unsigned char) ( 20 + sin( time * 2.0f ) * 20 ) };
     rgb_color_t color = hsv_to_rgb( hsv );
 
     glClearColor( color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0f );

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>THE GAME</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+        }
+        #canvas-container {
+            width: 640px;
+            height: 480px;
+            margin: 0px auto;
+            border: 5px solid red;
+        }
+    </style>
+  </head>
+  <body>
+
+    <h1 style="text-align: center">IN PROGRESS</h1>
+
+    <div id="canvas-container">
+      <canvas class="emscripten" id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+    </div>
+
+    <script type='text/javascript'>
+      var Module = {
+        print: (function() {
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            console.log(text);
+          };
+        })(),
+
+        canvas: (() => {
+          var canvas = document.getElementById('canvas');
+
+          return canvas;
+        })(),
+      };
+    </script>
+    {{{ SCRIPT }}}
+  </body>
+</html>

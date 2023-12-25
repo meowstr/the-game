@@ -30,12 +30,15 @@ jobs:
         run: emcc --version
       - name: Compile
         run: make
-      - uses: actions/upload-artifact@master
+      - name: Upload artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@master
         with:
           name: page
           path: build
           if-no-files-found: error
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment

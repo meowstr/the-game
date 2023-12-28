@@ -4,7 +4,7 @@
 
 #include <GLES2/gl2.h>
 
-int create_shader( int * out, int type, const char * source )
+static int create_shader( int * out, int type, const char * source )
 {
     int shader;
     int compiled;
@@ -49,7 +49,7 @@ int create_shader( int * out, int type, const char * source )
     return 0;
 }
 
-int create_shader_program( int * out, int * shaders, int count )
+static int create_shader_program( int * out, int * shaders, int count )
 {
     int program;
     int linked;
@@ -145,10 +145,10 @@ void pos_buffer_t::set( const float * pos_data, int new_count )
 {
     glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
     glBufferData(
-        GL_ARRAY_BUFFER,             // type
+        GL_ARRAY_BUFFER,                 // type
         new_count * 3 * sizeof( float ), // size in bytes
-        pos_data,                    // data pointer
-        GL_DYNAMIC_DRAW              // render strategy
+        pos_data,                        // data pointer
+        GL_DYNAMIC_DRAW                  // render strategy
     );
 
     count = new_count;
@@ -207,17 +207,17 @@ void pos_uv_buffer_t::render()
     // TODO
 }
 
-void set_uniform_vec3( int uniform, vec3 v )
+void set_uniform( int uniform, float ( &v )[ 3 ] )
 {
     glUniform3fv( uniform, 1, v );
 }
 
-void set_uniform_vec4( int uniform, vec4 v )
+void set_uniform( int uniform, float ( &v )[ 4 ] )
 {
     glUniform4fv( uniform, 1, v );
 }
 
-void set_uniform_mat4( int uniform, mat4 m )
+void set_uniform( int uniform, vec4 ( &m )[ 4 ] )
 {
     glUniformMatrix4fv( uniform, 1, GL_FALSE, (float *) m );
 }

@@ -27,7 +27,7 @@ int build_shader( const char * vertex_string, const char * fragment_string );
 
 int find_uniform( int shader, const char * uniform_name );
 
-void set_uniform_vec3( int uniform, vec3 v );
-void set_uniform_vec4( int uniform, vec4 v );
-void set_uniform_mat4( int uniform, mat4 v );
 
+void set_uniform( int uniform, float ( &v )[ 3 ] );
+void set_uniform( int uniform, float ( &v )[ 4 ] );
+void set_uniform( int uniform, vec4 ( &m )[ 4 ] );

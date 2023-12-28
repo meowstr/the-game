@@ -1,8 +1,11 @@
 #include "render.hpp"
 
 #include "render_utils.hpp"
+#include "state.hpp"
 
+#include "cglm/affine.h"
 #include "cglm/mat4.h"
+
 #include <GLES2/gl2.h>
 
 // render state
@@ -19,7 +22,7 @@ struct {
 
 } rstate;
 
-void shader_init()
+static void shader_init()
 {
     const char * v_shader_str = "#version 100                        \n"
                                 "attribute vec3 a_pos;               \n"
@@ -61,6 +64,13 @@ void render_init()
 
 void render()
 {
+    vec3 axis;
+    axis[ 0 ] = 0.0f;
+    axis[ 1 ] = 1.0f;
+    axis[ 2 ] = 0.0f;
+
+    glm_rotate_make( rstate.proj, state.render_time, axis );
+
     glClearColor( 0.1f, 0.0f, 0.0f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT );
 
@@ -72,8 +82,8 @@ void render()
 
     glUseProgram( rstate.shader.id );
 
-    set_uniform_mat4( rstate.shader.proj, rstate.proj );
-    set_uniform_vec4( rstate.shader.color, color );
+    set_uniform( rstate.shader.proj, rstate.proj );
+    set_uniform( rstate.shader.color, color );
 
     rstate.triangle_buffer.render();
 }

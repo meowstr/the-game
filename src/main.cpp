@@ -9,8 +9,8 @@
 
 static void loop()
 {
-    static float time = 0.0f;
-    time += 1.0f / 60.0f;
+    state.tick_time += 1.0f / 60.0f;
+    state.render_time += 1.0f / 60.0f;
 
     render();
 }

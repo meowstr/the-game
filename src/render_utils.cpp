@@ -135,20 +135,35 @@ int find_uniform( int shader, const char * uniform_name )
 void pos_buffer_t::init()
 {
     unsigned int temp_pos_buffer;
+    unsigned int temp_color_buffer;
     glGenBuffers( 1, &temp_pos_buffer );
+    glGenBuffers( 1, &temp_color_buffer );
 
     pos_buffer = temp_pos_buffer;
+    color_buffer = temp_color_buffer;
     count = 0;
 }
 
-void pos_buffer_t::set( const float * pos_data, int new_count )
+void pos_buffer_t::set(
+    const float * pos_data,
+    const float * color_data,
+    int new_count
+)
 {
     glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
     glBufferData(
-        GL_ARRAY_BUFFER,             // type
+        GL_ARRAY_BUFFER,                 // type
         new_count * 3 * sizeof( float ), // size in bytes
-        pos_data,                    // data pointer
-        GL_DYNAMIC_DRAW              // render strategy
+        pos_data,                        // data pointer
+        GL_DYNAMIC_DRAW                  // render strategy
+    );
+
+    glBindBuffer( GL_ARRAY_BUFFER, color_buffer );
+    glBufferData(
+        GL_ARRAY_BUFFER,                 // type
+        new_count * 3 * sizeof( float ), // size in bytes
+        color_data,                        // data pointer
+        GL_DYNAMIC_DRAW                  // render strategy
     );
 
     count = new_count;
@@ -160,6 +175,17 @@ void pos_buffer_t::bind()
     glEnableVertexAttribArray( 0 );
     glVertexAttribPointer(
         0,                     // attrib index
+        3,                     // element size
+        GL_FLOAT,              // type
+        GL_FALSE,              // normalize
+        3 * sizeof( GLfloat ), // stride
+        (void *) ( 0 )         // offset
+    );
+
+    glBindBuffer( GL_ARRAY_BUFFER, color_buffer );
+    glEnableVertexAttribArray( 1 );
+    glVertexAttribPointer(
+        1,                     // attrib index
         3,                     // element size
         GL_FLOAT,              // type
         GL_FALSE,              // normalize

@@ -4,10 +4,12 @@
 
 struct pos_buffer_t {
     int pos_buffer;
+    int color_buffer; // remove this later
+
     int count;
 
     void init();
-    void set( const float * buffer, int count );
+    void set( const float * pos_data, const float * color_data, int count );
     void bind();
     void render();
 };

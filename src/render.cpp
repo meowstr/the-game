@@ -23,24 +23,19 @@ void shader_init()
 {
     const char * v_shader_str = "#version 100                        \n"
                                 "attribute vec3 a_pos;               \n"
-                                "attribute vec3 a_color;             \n"
                                 "uniform mat4 u_proj;                \n"
-                                "varying vec3 v_color;               \n"
                                 "void main()                         \n"
                                 "{                                   \n"
                                 "   vec4 pos = vec4(a_pos, 1.0);     \n"
                                 "   gl_Position = u_proj * pos;      \n"
-                                "   v_color = a_color;               \n"
                                 "}                                   \n";
 
     const char * f_shader_str = "#version 100                        \n"
                                 "precision lowp float;               \n"
                                 "uniform vec4 u_color;               \n"
-                                "varying vec3 v_color;               \n"
                                 "void main()                         \n"
                                 "{                                   \n"
-                                "  vec4 c = vec4(v_color, 1.0);      \n"
-                                "  gl_FragColor = u_color * c;       \n"
+                                "  gl_FragColor = u_color;           \n"
                                 "}                                   \n";
 
     int id = build_shader( v_shader_str, f_shader_str );
@@ -56,11 +51,8 @@ void render_init()
     const float triangle_data[] =
         { -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f };
 
-    const float color_data[] =
-        { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-
     rstate.triangle_buffer.init();
-    rstate.triangle_buffer.set( triangle_data, color_data, 3 );
+    rstate.triangle_buffer.set( triangle_data, 3 );
 
     glm_mat4_identity( rstate.proj );
 
@@ -74,8 +66,8 @@ void render()
 
     vec4 color;
     color[ 0 ] = 1.0f;
-    color[ 1 ] = 1.0f;
-    color[ 2 ] = 1.0f;
+    color[ 1 ] = 0.0f;
+    color[ 2 ] = 0.0f;
     color[ 3 ] = 1.0f;
 
     glUseProgram( rstate.shader.id );

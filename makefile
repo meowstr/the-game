@@ -1,5 +1,6 @@
 SOURCES = src/*.cpp
 HEADERS = src/*.hpp
+LIBS = libs/*.a
 
 
 build/main.html: ${SOURCES} ${HEADERS}
@@ -9,7 +10,8 @@ build/main.html: ${SOURCES} ${HEADERS}
 		-sMIN_WEBGL_VERSION=2   \
 		-sMAX_WEBGL_VERSION=2   \
 		-sUSE_GLFW=3            \
-		src/*.cpp               \
+		${SOURCES}              \
+		${LIBS}                 \
 		-o build/index.html
 
 

@@ -7,7 +7,7 @@ struct pos_buffer_t {
     int count;
 
     void init();
-    void set( float * buffer, int count );
+    void set( const float * buffer, int count );
     void bind();
     void render();
 };
@@ -18,7 +18,7 @@ struct pos_uv_buffer_t {
     int count;
 
     void init();
-    void set( float * pos_buffer, float * uv_buffer, int count );
+    void set( const float * pos_buffer, const float * uv_buffer, int count );
     void bind();
     void render();
 };

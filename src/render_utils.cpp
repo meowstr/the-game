@@ -141,12 +141,12 @@ void pos_buffer_t::init()
     count = 0;
 }
 
-void pos_buffer_t::set( float * pos_data, int new_count )
+void pos_buffer_t::set( const float * pos_data, int new_count )
 {
     glBindBuffer( GL_ARRAY_BUFFER, pos_buffer );
     glBufferData(
         GL_ARRAY_BUFFER,             // type
-        count * 3 * sizeof( float ), // size in bytes
+        new_count * 3 * sizeof( float ), // size in bytes
         pos_data,                    // data pointer
         GL_DYNAMIC_DRAW              // render strategy
     );
@@ -188,7 +188,11 @@ void pos_uv_buffer_t::init()
     count = 0;
 }
 
-void pos_uv_buffer_t::set( float * pos_buffer, float * uv_buffer, int count )
+void pos_uv_buffer_t::set(
+    const float * pos_buffer,
+    const float * uv_buffer,
+    int count
+)
 {
     // TODO
 }

@@ -30,11 +30,11 @@ void logger_log(
         pre_string = "[INFO ]";
         break;
     case 2:
-        pre_string = "  [ERROR]";
+        pre_string = "[ERROR]";
         break;
     }
 
-    if ( level >= 2 ) printf( "\33[1;31m\n" );
+    //if ( level >= 2 ) printf( "\33[1;31m\n" );
 
     char custom_buffer[ 128 ];
     vsnprintf( custom_buffer, 128, format, args );
@@ -43,7 +43,7 @@ void logger_log(
 
     fflush( stdout );
 
-    if ( level >= 2 ) printf( "\33[0m\n" );
+    //if ( level >= 2 ) printf( "\33[0m\n" );
 
     va_end( args );
 }

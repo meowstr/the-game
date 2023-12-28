@@ -1,6 +1,7 @@
 SOURCES = src/*.cpp
 HEADERS = src/*.hpp
 LIBS = libs/*.a
+FLAGS = -std=c++20
 
 
 build/main.html: ${SOURCES} ${HEADERS}
@@ -10,6 +11,7 @@ build/main.html: ${SOURCES} ${HEADERS}
 		-sMIN_WEBGL_VERSION=2   \
 		-sMAX_WEBGL_VERSION=2   \
 		-sUSE_GLFW=3            \
+		${FLAGS}                \
 		${SOURCES}              \
 		${LIBS}                 \
 		-o build/index.html
@@ -21,6 +23,7 @@ bench:
 	  echo $${source};           \
 	  emcc                       \
 	    -c                       \
+		${FLAGS}                 \
 	    $${source}               \
 	    -o build/tmp.o;          \
 	done

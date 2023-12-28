@@ -1,16 +1,22 @@
 #include "render.hpp"
 
+#include "hardware.hpp"
 #include "render_utils.hpp"
+#include "shape.hpp"
 #include "state.hpp"
 
 #include "cglm/affine.h"
+#include "cglm/cam.h"
 #include "cglm/mat4.h"
 
 #include <GLES2/gl2.h>
 
+#include <vector>
+
 // render state
 struct {
     pos_buffer_t triangle_buffer;
+    pos_buffer_t quad_buffer;
 
     struct {
         int id;
@@ -49,15 +55,61 @@ static void shader_init()
     glBindAttribLocation( id, 0, "a_pos" );
 }
 
+static void build_level()
+{
+    std::vector< rect_t > rects;
+    std::vector< float > vertex_data;
+
+    int num_cols = 10;
+    int num_rows = 3;
+
+    float width = (float) hardware_width() / num_cols;
+    float height = 30.0f;
+
+    for ( int r = 0; r < num_rows; r++ ) {
+        for ( int c = 0; c < num_cols; c++ ) {
+            rect_t rect{
+                c * width,
+                r * height,
+                width,
+                height,
+            };
+
+            rect.margin( 5 );
+            rects.push_back( rect );
+        }
+    }
+
+    for ( auto & rect : rects ) {
+        int i = std::ssize( vertex_data );
+        vertex_data.resize( i + 18 );
+        rect.vertices( &vertex_data[ i ] );
+    }
+
+    rstate.quad_buffer.set( vertex_data.data(), std::ssize( vertex_data ) / 3 );
+}
+
 void render_init()
 {
     const float triangle_data[] =
         { -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f };
+    float quad_data[ 18 ];
 
     rstate.triangle_buffer.init();
     rstate.triangle_buffer.set( triangle_data, 3 );
 
-    glm_mat4_identity( rstate.proj );
+    rstate.quad_buffer.init();
+    build_level();
+
+    glm_ortho(
+        0.0f,
+        hardware_width(),
+        hardware_height(),
+        0.0f,
+        0.0f,
+        1000.0f,
+        rstate.proj
+    );
 
     shader_init();
 }
@@ -69,7 +121,7 @@ void render()
     axis[ 1 ] = 1.0f;
     axis[ 2 ] = 0.0f;
 
-    glm_rotate_make( rstate.proj, state.render_time, axis );
+    //glm_rotate_make( rstate.proj, state.render_time, axis );
 
     glClearColor( 0.1f, 0.0f, 0.0f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT );
@@ -85,5 +137,5 @@ void render()
     set_uniform( rstate.shader.proj, rstate.proj );
     set_uniform( rstate.shader.color, color );
 
-    rstate.triangle_buffer.render();
+    rstate.quad_buffer.render();
 }

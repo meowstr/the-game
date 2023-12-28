@@ -1,1 +1,2 @@
 -I$HOME/.emscripten_cache/sysroot/include
+-std=c++20

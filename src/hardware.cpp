@@ -52,3 +52,13 @@ void hardware_set_loop( loop_function_t step )
 {
     emscripten_set_main_loop( step, 0, 1 );
 }
+
+int hardware_width()
+{
+    return hardware.width;
+}
+
+int hardware_height()
+{
+    return hardware.height;
+}

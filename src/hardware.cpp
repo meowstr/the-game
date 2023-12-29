@@ -62,3 +62,18 @@ int hardware_height()
 {
     return hardware.height;
 }
+
+float hardware_x_axis()
+{
+    float dx = 0.0f;
+
+    if ( glfwGetKey( hardware.window, GLFW_KEY_A ) == GLFW_PRESS ) {
+        dx -= 1.0f;
+    }
+
+    if ( glfwGetKey( hardware.window, GLFW_KEY_D ) == GLFW_PRESS ) {
+        dx += 1.0f;
+    }
+
+    return dx;
+}

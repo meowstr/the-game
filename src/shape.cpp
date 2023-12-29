@@ -34,3 +34,13 @@ void rect_t::margin( float amount )
     w -= amount * 2;
     h -= amount * 2;
 }
+
+float rect_t::center_x()
+{
+    return x + w * 0.5f;
+}
+
+float rect_t::center_y()
+{
+    return y + h * 0.5f;
+}

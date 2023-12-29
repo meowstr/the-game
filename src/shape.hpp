@@ -11,4 +11,7 @@ struct rect_t {
     void vertices( float * out_data ) const;
 
     void margin( float amount );
+
+    float center_x();
+    float center_y();
 };

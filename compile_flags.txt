@@ -1,2 +1,2 @@
--I$HOME/.emscripten_cache/sysroot/include
 -std=c++20
+-isystem/home/ajay/.emscripten_cache/sysroot/include/bruh

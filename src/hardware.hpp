@@ -8,3 +8,5 @@ void hardware_set_loop(loop_function_t step);
 
 int hardware_width();
 int hardware_height();
+
+float hardware_x_axis();

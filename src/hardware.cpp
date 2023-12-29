@@ -75,5 +75,16 @@ float hardware_x_axis()
         dx += 1.0f;
     }
 
+    if ( glfwGetMouseButton( hardware.window, GLFW_MOUSE_BUTTON_LEFT ) ==
+         GLFW_PRESS ) {
+        double x, y;
+        glfwGetCursorPos( hardware.window, &x, &y );
+        if ( x < hardware.width * 0.5f ) {
+            dx = -1.0f;
+        } else {
+            dx = 1.0f;
+        }
+    }
+
     return dx;
 }

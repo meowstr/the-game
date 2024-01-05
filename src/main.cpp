@@ -20,7 +20,7 @@ static float clamp( float x, float min, float max )
 
 static void tick_paddle()
 {
-    float speed = 500.0f;
+    float speed = 10.0f;
     state.paddle_rect.x += speed * hardware_x_axis();
     state.paddle_rect.x = clamp(
         state.paddle_rect.x,
@@ -51,25 +51,25 @@ static int collide_ball( rect_t rect )
     // left edge
     if ( closest == dx1 ) {
         state.ball_x = rect.x;
-        state.ball_vx *= -500;
+        state.ball_vx *= -1;
     }
 
     // right edge
     if ( closest == dx2 ) {
         state.ball_x = rect.x + rect.w;
-        state.ball_vx *= -500;
+        state.ball_vx *= -1;
     }
 
     // top edge
     if ( closest == dy1 ) {
         state.ball_y = rect.y;
-        state.ball_vy *= -500;
+        state.ball_vy *= -1;
     }
 
     // bottom edge
     if ( closest == dy2 ) {
         state.ball_y = rect.y + rect.h;
-        state.ball_vy *= -500;
+        state.ball_vy *= -1;
     }
 
     return 1;

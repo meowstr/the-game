@@ -2,7 +2,6 @@ SOURCES = src/*.cpp
 HEADERS = src/*.h
 FLAGS = -std=c++98
 
-
 build/main.html: ${SOURCES} ${HEADERS}
 	mkdir -p build
 	emcc       \

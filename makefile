@@ -1,7 +1,7 @@
 SOURCES = src/*.cpp
-HEADERS = src/*.hpp
+HEADERS = src/*.h
 LIBS = libs/*.a
-FLAGS = -std=c++20
+FLAGS = -std=c++98
 
 
 build/main.html: ${SOURCES} ${HEADERS}
@@ -10,7 +10,6 @@ build/main.html: ${SOURCES} ${HEADERS}
 		--shell-file shell.html \
 		-sMIN_WEBGL_VERSION=2   \
 		-sMAX_WEBGL_VERSION=2   \
-		-sUSE_GLFW=3            \
 		${FLAGS}                \
 		${SOURCES}              \
 		${LIBS}                 \

@@ -11,6 +11,23 @@
 
 static void reset_ball();
 
+static void init_block_table()
+{
+    const int cap = 128;
+
+    state.block_rect_list = new rect_t[ cap ];
+    state.block_timer_list = new float[ cap ];
+    state.block_state_list = new int[ cap ];
+}
+
+static void remove_block( int index )
+{
+    array_swap_last( state.block_rect_list, state.block_count, index );
+    array_swap_last( state.block_timer_list, state.block_count, index );
+    array_swap_last( state.block_state_list, state.block_count, index );
+    state.block_count--;
+}
+
 static float clamp( float x, float min, float max )
 {
     if ( x < min ) return min;
@@ -75,6 +92,27 @@ static int collide_ball( rect_t rect )
     return 1;
 }
 
+static void tick_blocks()
+{
+    for ( int i = 0; i < state.block_count; i++ ) {
+        int & b_state = state.block_state_list[ i ];
+        float & b_timer = state.block_timer_list[ i ];
+        rect_t & b_rect = state.block_rect_list[ i ];
+
+        if ( b_state != 2 ) continue;
+
+        const float speed = 5.0f;
+
+        b_timer -= state.tick_step * speed;
+        b_rect.margin( -100.0f * state.tick_step );
+
+        if ( b_timer <= 0.0f ) {
+            remove_block( i );
+            break;
+        }
+    }
+}
+
 static void tick_ball()
 {
     if ( state.throw_timer > 0.0f ) {
@@ -106,18 +144,24 @@ static void tick_ball()
         reset_ball();
     }
 
-    collide_ball( state.paddle_rect );
+    state.paddle_touched = collide_ball( state.paddle_rect );
 
-    for ( int i = 0; i < std::ssize( state.block_rect_list ); i++ ) {
+    for ( int i = 0; i < state.block_count; i++ ) {
+        int & b_state = state.block_state_list[ i ];
+
+        if ( b_state == 2 ) continue;
+
         int collided = collide_ball( state.block_rect_list[ i ] );
 
         if ( collided ) {
-            std::swap(
-                state.block_rect_list[ i ],
-                state.block_rect_list.back()
-            );
-            state.block_rect_list.pop_back();
-            break;
+            if ( b_state == 0 ) {
+                b_state = 1;
+                break;
+            }
+            if ( b_state == 1 ) {
+                b_state = 2;
+                break;
+            }
         }
     }
 }
@@ -132,6 +176,7 @@ static void loop()
 
     tick_paddle();
     tick_ball();
+    tick_blocks();
 
     render();
 }
@@ -146,6 +191,8 @@ static void reset_ball()
 
 static void init()
 {
+    init_block_table();
+
     int cols = 10;
     int rows = 6;
 
@@ -163,7 +210,12 @@ static void init()
 
             rect.margin( 5 );
 
-            state.block_rect_list.push_back( rect );
+            int i = state.block_count;
+            state.block_count++;
+
+            state.block_rect_list[ i ] = rect;
+            state.block_timer_list[ i ] = 1.0f;
+            state.block_state_list[ i ] = 0;
         }
     }
 

@@ -1,8 +1,8 @@
 ![Build](https://github.com/meowstr/the-game/actions/workflows/emscripten.yml/badge.svg)
 
-Hi! This is the game. Devs of all skill levels are welcome to contribute! Feel free to make this whatever u want. Pull requests will be merged by you, and the site will be built automatically by Github actions. No code reviewing. LET THERE BE CHAOS!
+i will blindly merge any pull request without code review. feel free to contribute however u want to!
 
-You can find the current state of the game here: https://meowstr.github.io/the-game/
+an up-to-date view of the game can be found here (auto-generated): https://meowstr.github.io/the-game/
 
 Rules
 -----

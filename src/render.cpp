@@ -29,15 +29,63 @@ struct {
     mat4 model;
     mat4 proj;
 
+    float * ball_tail_x;
+    float * ball_tail_y;
+    int ball_tail_count;
+    int ball_tail_front;
+
 } rstate;
 
 struct sprite_t {
     rect_t rect;
     color_t color;
+    float alpha = 1.0f;
     float rotation = 0.0f;
 
     void render();
 };
+
+// static float lerp( float a, float b, float t )
+//{
+//     return t * b + ( 1 - t ) * a;
+// }
+
+static void init_ball_tail()
+{
+    const int cap = 64;
+
+    rstate.ball_tail_count = cap;
+    rstate.ball_tail_front = 0;
+    rstate.ball_tail_x = new float[ cap ];
+    rstate.ball_tail_y = new float[ cap ];
+}
+
+static void push_ball_tail_helper( float x, float y )
+{
+    rstate.ball_tail_front--;
+    rstate.ball_tail_front += rstate.ball_tail_count;
+    rstate.ball_tail_front %= rstate.ball_tail_count;
+
+    rstate.ball_tail_x[ rstate.ball_tail_front ] = x;
+    rstate.ball_tail_y[ rstate.ball_tail_front ] = y;
+}
+
+static void push_ball_tail()
+{
+    const int interp = 4;
+
+    float last_x = rstate.ball_tail_x[ rstate.ball_tail_front ];
+    float last_y = rstate.ball_tail_y[ rstate.ball_tail_front ];
+    float new_x = state.ball_x;
+    float new_y = state.ball_y;
+
+    for ( int i = 0; i < 4; i++ ) {
+        float t = (float) ( i + 1 ) / interp;
+        float x = std::lerp( last_x, new_x, t );
+        float y = std::lerp( last_y, new_y, t );
+        push_ball_tail_helper( x, y );
+    }
+}
 
 static void shader_init()
 {
@@ -75,7 +123,7 @@ void sprite_t::render()
     color4[ 0 ] = color.r;
     color4[ 1 ] = color.g;
     color4[ 2 ] = color.b;
-    color4[ 3 ] = 1.0f;
+    color4[ 3 ] = alpha;
 
     vec3 scale;
     scale[ 0 ] = roundf( rect.w );
@@ -133,6 +181,11 @@ void render_init()
     glm_mat4_identity( rstate.model );
 
     shader_init();
+
+    init_ball_tail();
+
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // blend alpha
 }
 
 void render()
@@ -142,17 +195,36 @@ void render()
 
     glUseProgram( rstate.shader.id );
 
-    for ( rect_t & rect : state.block_rect_list ) {
+    for ( int i = 0; i < state.block_count; i++ ) {
         sprite_t s;
-        s.rect = rect;
-        s.color = color_red;
+
+        s.rect = state.block_rect_list[ i ];
+
+        int b_state = state.block_state_list[ i ];
+        if ( b_state == 0 ) {
+            s.color = color_red;
+        }
+        if ( b_state == 1 ) {
+            s.color = color_yellow;
+        }
+        if ( b_state == 2 ) {
+            s.color = color_yellow;
+            s.alpha = state.block_timer_list[ i ];
+        }
+
         s.render();
     }
 
     sprite_t paddle;
     paddle.rect = state.paddle_rect;
-    paddle.color = color_red;
+    if ( state.paddle_touched ) {
+        paddle.color = color_yellow;
+    } else {
+        paddle.color = color_red;
+    }
     paddle.render();
+
+    push_ball_tail();
 
     rect_t ball_rect;
     ball_rect = {
@@ -165,6 +237,23 @@ void render()
     sprite_t ball;
     ball.rect = ball_rect;
     ball.color = color_yellow;
-    ball.rotation = state.render_time * 10.0f;
+    ball.rotation = state.render_time * 30.0f;
     ball.render();
+
+    for ( int i = 0; i < rstate.ball_tail_count; i++ ) {
+        float t = (float) i / rstate.ball_tail_count;
+        float radius = ( 1.0f - ( t * 0.5f ) ) * state.ball_radius;
+        int j = ( i + rstate.ball_tail_front ) % rstate.ball_tail_count;
+
+        ball.rect = {
+            rstate.ball_tail_x[ j ] - state.ball_radius,
+            rstate.ball_tail_y[ j ] - state.ball_radius,
+            2 * radius,
+            2 * radius,
+        };
+
+        ball.alpha = 1.0f - t;
+
+        ball.render();
+    }
 }

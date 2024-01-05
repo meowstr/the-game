@@ -6,8 +6,8 @@ build/main.html: ${SOURCES} ${HEADERS}
 	mkdir -p build
 	emcc       \
 		--shell-file shell.html \
-		-sMIN_WEBGL_VERSION=2   \
-		-sMAX_WEBGL_VERSION=2   \
+		-sMIN_WEBGL_VERSION=1   \
+		-sMAX_WEBGL_VERSION=1   \
 		-sUSE_SDL		\
 		${FLAGS}                \
 		${SOURCES}              \

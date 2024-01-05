@@ -1,19 +1,18 @@
 SOURCES = src/*.cpp
-HEADERS = src/*.hpp
-LIBS = libs/*.a
-FLAGS = -std=c++20
-
+HEADERS = src/*.h
+FLAGS = -std=c++98
 
 build/main.html: ${SOURCES} ${HEADERS}
 	mkdir -p build
 	emcc       \
 		--shell-file shell.html \
-		-sMIN_WEBGL_VERSION=2   \
-		-sMAX_WEBGL_VERSION=2   \
-		-sUSE_GLFW=3            \
+		-sMIN_WEBGL_VERSION=1   \
+		-sMAX_WEBGL_VERSION=1   \
+		-sUSE_SDL		\
 		${FLAGS}                \
 		${SOURCES}              \
-		${LIBS}                 \
+		-lGL			\
+		-lGLU			\
 		-o build/index.html
 
 

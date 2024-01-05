@@ -11,6 +11,8 @@ build/main.html: ${SOURCES} ${HEADERS}
 		-sUSE_SDL		\
 		${FLAGS}                \
 		${SOURCES}              \
+		-lGL			\
+		-lGLU			\
 		-o build/index.html
 
 

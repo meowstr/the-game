@@ -1,6 +1,5 @@
 SOURCES = src/*.cpp
 HEADERS = src/*.h
-LIBS = libs/*.a
 FLAGS = -std=c++98
 
 
@@ -12,7 +11,6 @@ build/main.html: ${SOURCES} ${HEADERS}
 		-sMAX_WEBGL_VERSION=2   \
 		${FLAGS}                \
 		${SOURCES}              \
-		${LIBS}                 \
 		-o build/index.html
 
 

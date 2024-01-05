@@ -8,6 +8,7 @@ build/main.html: ${SOURCES} ${HEADERS}
 		--shell-file shell.html \
 		-sMIN_WEBGL_VERSION=2   \
 		-sMAX_WEBGL_VERSION=2   \
+		-sUSE_SDL		\
 		${FLAGS}                \
 		${SOURCES}              \
 		-o build/index.html

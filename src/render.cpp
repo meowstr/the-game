@@ -45,11 +45,6 @@ struct sprite_t {
     void render();
 };
 
-// static float lerp( float a, float b, float t )
-//{
-//     return t * b + ( 1 - t ) * a;
-// }
-
 static void init_ball_tail()
 {
     const int cap = 64;
@@ -79,7 +74,7 @@ static void push_ball_tail()
     float new_x = state.ball_x;
     float new_y = state.ball_y;
 
-    for ( int i = 0; i < 4; i++ ) {
+    for ( int i = 0; i < interp; i++ ) {
         float t = (float) ( i + 1 ) / interp;
         float x = std::lerp( last_x, new_x, t );
         float y = std::lerp( last_y, new_y, t );
@@ -87,12 +82,12 @@ static void push_ball_tail()
     }
 }
 
-static void shader_init()
+static void init_shader()
 {
     const char * v_shader_str = "#version 100                        \n"
                                 "attribute vec3 a_pos;               \n"
                                 "uniform mat4 u_proj;                \n"
-                                "uniform mat4 u_model;                \n"
+                                "uniform mat4 u_model;               \n"
                                 "void main()                         \n"
                                 "{                                   \n"
                                 "   vec4 pos = vec4(a_pos, 1.0);     \n"
@@ -154,6 +149,21 @@ void sprite_t::render()
     rstate.quad_buffer.render();
 }
 
+static void update_camera()
+{
+    float dx = state.camera_x - hardware_width() * 0.5f;
+    float dy = state.camera_y - hardware_height() * 0.5f;
+    glm_ortho(
+        dx + 0.0f,
+        dx + hardware_width(),
+        dy + hardware_height(),
+        dy + 0.0f,
+        0.0f,
+        1000.0f,
+        rstate.proj
+    );
+}
+
 void render_init()
 {
     const float triangle_data[] =
@@ -168,19 +178,11 @@ void render_init()
     rstate.quad_buffer.init();
     rstate.quad_buffer.set( quad_data, 6 );
 
-    glm_ortho(
-        0.0f,
-        hardware_width(),
-        hardware_height(),
-        0.0f,
-        0.0f,
-        1000.0f,
-        rstate.proj
-    );
+    update_camera();
 
     glm_mat4_identity( rstate.model );
 
-    shader_init();
+    init_shader();
 
     init_ball_tail();
 
@@ -188,13 +190,8 @@ void render_init()
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // blend alpha
 }
 
-void render()
+static void render_blocks()
 {
-    glClearColor( 0.1f, 0.0f, 0.0f, 1.0f );
-    glClear( GL_COLOR_BUFFER_BIT );
-
-    glUseProgram( rstate.shader.id );
-
     for ( int i = 0; i < state.block_count; i++ ) {
         sprite_t s;
 
@@ -214,7 +211,10 @@ void render()
 
         s.render();
     }
+}
 
+static void render_paddle()
+{
     sprite_t paddle;
     paddle.rect = state.paddle_rect;
     if ( state.paddle_touched ) {
@@ -223,9 +223,10 @@ void render()
         paddle.color = color_red;
     }
     paddle.render();
+}
 
-    push_ball_tail();
-
+static void render_ball()
+{
     rect_t ball_rect;
     ball_rect = {
         state.ball_x - state.ball_radius,
@@ -253,7 +254,66 @@ void render()
         };
 
         ball.alpha = 1.0f - t;
+        ball.rotation += 0.1f;
 
         ball.render();
     }
+}
+
+static void render_room()
+{
+    int outline_width = 5;
+
+    sprite_t bg_fill;
+    bg_fill.rect = { 0.0f, 0.0f, (float) state.room_w, (float) state.room_h };
+    bg_fill.color = { 0.1f, 0.0f, 0.0f };
+
+    sprite_t bg_outline;
+    bg_outline.rect = bg_fill.rect;
+    bg_outline.rect.margin( -outline_width );
+    bg_outline.color = { 1.0f, 0.0f, 0.0f };
+
+    bg_outline.render();
+
+    sprite_t wall_mask;
+    wall_mask.rect = {
+        state.room_w - 50.0f,
+        (float) -outline_width,
+        50.0f + outline_width,
+        50.0f };
+
+    if ( state.room_state == 0 ) {
+        wall_mask.color = color_red;
+    }
+
+    if ( state.room_state == 1 ) {
+        wall_mask.color = color_yellow;
+    }
+
+    if ( state.room_state == 2 ) {
+        wall_mask.color = color_yellow;
+    }
+
+    if ( state.room_state == 3 ) {
+        wall_mask.color = color_black;
+    }
+
+    wall_mask.render();
+
+    bg_fill.render();
+}
+
+void render()
+{
+    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+    glClear( GL_COLOR_BUFFER_BIT );
+
+    glUseProgram( rstate.shader.id );
+
+    push_ball_tail();
+
+    render_room();
+    render_blocks();
+    render_paddle();
+    render_ball();
 }

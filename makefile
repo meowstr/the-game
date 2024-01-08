@@ -1,7 +1,7 @@
 SOURCES = src/*.cpp
 HEADERS = src/*.hpp
 LIBS = libs/*.a
-FLAGS = -std=c++20
+FLAGS = -std=c++20 -g
 
 
 build/main.html: ${SOURCES} ${HEADERS}

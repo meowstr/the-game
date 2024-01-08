@@ -9,8 +9,8 @@
 
 static struct {
     GLFWwindow * window = nullptr;
-    int width = 640;
-    int height = 480;
+    int width = 800;
+    int height = 600;
 } hardware;
 
 int hardware_init()

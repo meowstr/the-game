@@ -7,8 +7,6 @@
 #include <float.h>
 #include <math.h>
 
-#include <GLES2/gl2.h>
-
 static void reset_ball();
 
 static void init_block_table()
@@ -42,7 +40,7 @@ static void tick_paddle()
     state.paddle_rect.x = clamp(
         state.paddle_rect.x,
         5.0f,
-        hardware_width() - state.paddle_rect.w - 5.0f
+        state.room_w - state.paddle_rect.w - 5.0f
     );
 }
 
@@ -113,6 +111,33 @@ static void tick_blocks()
     }
 }
 
+static int collide_corner()
+{
+    if ( !( state.ball_x > state.room_w - 50.0f && state.ball_y < 50.0f ) )
+        return 0;
+
+    if ( state.room_state == 0 ) {
+        state.room_state = 1;
+        return 0;
+    }
+
+    if ( state.room_state == 1 ) {
+        state.room_state = 2;
+        return 0;
+    }
+
+    if ( state.room_state == 2 ) {
+        state.room_state = 3;
+        return 0;
+    }
+
+    if ( state.room_state == 3 ) {
+        return 1;
+    }
+
+    return 0;
+}
+
 static void tick_ball()
 {
     if ( state.throw_timer > 0.0f ) {
@@ -126,21 +151,25 @@ static void tick_ball()
     state.ball_y += state.ball_vy * state.tick_step;
 
     if ( state.ball_x < 0.0f ) {
+        if ( collide_corner() ) return;
         state.ball_x = 0.0f;
         state.ball_vx *= -1;
     }
 
-    if ( state.ball_x > hardware_width() ) {
-        state.ball_x = hardware_width();
+    if ( state.ball_x > state.room_w ) {
+        if ( collide_corner() ) return;
+        state.ball_x = state.room_w;
         state.ball_vx *= -1;
     }
 
     if ( state.ball_y < 0.0f ) {
+        if ( collide_corner() ) return;
         state.ball_y = 0.0f;
         state.ball_vy *= -1;
     }
 
-    if ( state.ball_y > hardware_height() ) {
+    if ( state.ball_y > state.room_h ) {
+        if ( collide_corner() ) return;
         reset_ball();
     }
 
@@ -193,10 +222,17 @@ static void init()
 {
     init_block_table();
 
+    state.room_w = 640;
+    state.room_h = 480;
+
+    // center on the room
+    state.camera_x = state.room_w * 0.5f;
+    state.camera_y = state.room_h * 0.5f;
+
     int cols = 10;
     int rows = 6;
 
-    int width = hardware_width() / cols;
+    int width = state.room_w / cols;
     int height = 30;
 
     for ( int r = 0; r < rows; r++ ) {
@@ -219,7 +255,7 @@ static void init()
         }
     }
 
-    state.paddle_rect = { 0.0f, hardware_height() - 20.0f, 100.0f, 20.0f };
+    state.paddle_rect = { 0.0f, state.room_h - 20.0f, 100.0f, 20.0f };
     state.paddle_rect.margin( 5 );
 
     state.ball_radius = 5.0f;

@@ -88,3 +88,8 @@ float hardware_x_axis()
 
     return dx;
 }
+
+float hardware_time()
+{
+    return glfwGetTime();
+}

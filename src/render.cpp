@@ -178,8 +178,6 @@ void render_init()
     rstate.quad_buffer.init();
     rstate.quad_buffer.set( quad_data, 6 );
 
-    update_camera();
-
     glm_mat4_identity( rstate.model );
 
     init_shader();
@@ -239,6 +237,7 @@ static void render_ball()
     ball.rect = ball_rect;
     ball.color = color_yellow;
     ball.rotation = state.render_time * 30.0f;
+
     ball.render();
 
     for ( int i = 0; i < rstate.ball_tail_count; i++ ) {
@@ -255,7 +254,6 @@ static void render_ball()
 
         ball.alpha = 1.0f - t;
         ball.rotation += 0.1f;
-
         ball.render();
     }
 }
@@ -271,6 +269,7 @@ static void render_room()
     sprite_t bg_outline;
     bg_outline.rect = bg_fill.rect;
     bg_outline.rect.margin( -outline_width );
+    bg_outline.rect.h -= outline_width;
     bg_outline.color = { 1.0f, 0.0f, 0.0f };
 
     bg_outline.render();
@@ -310,6 +309,10 @@ void render()
 
     glUseProgram( rstate.shader.id );
 
+    state.camera_x = state.ball_x;
+    state.camera_y = state.ball_y;
+
+    update_camera();
     push_ball_tail();
 
     render_room();

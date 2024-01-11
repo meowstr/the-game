@@ -10,3 +10,5 @@ int hardware_width();
 int hardware_height();
 
 float hardware_x_axis();
+
+float hardware_time();

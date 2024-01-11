@@ -197,11 +197,13 @@ static void tick_ball()
 
 static void loop()
 {
-    state.tick_time += 1.0f / 60.0f;
-    state.render_time += 1.0f / 60.0f;
+    float time = hardware_time();
 
-    state.tick_step = 1.0f / 60.0f;
-    state.render_step = 1.0f / 60.0f;
+    state.tick_step = fmin( time - state.tick_time, 1 / 60.0f );
+    state.render_step = state.tick_step;
+
+    state.tick_time = time;
+    state.render_time = time;
 
     tick_paddle();
     tick_ball();

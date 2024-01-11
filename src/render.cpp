@@ -151,17 +151,40 @@ void sprite_t::render()
 
 static void update_camera()
 {
-    float dx = state.camera_x - hardware_width() * 0.5f;
-    float dy = state.camera_y - hardware_height() * 0.5f;
+    // glm_ortho(
+    //     0.0f,
+    //     hardware_width(),
+    //     hardware_height(),
+    //     0.0f,
+    //     0.0f,
+    //     1000.0f,
+    //     rstate.proj
+    //);
+
     glm_ortho(
-        dx + 0.0f,
-        dx + hardware_width(),
-        dy + hardware_height(),
-        dy + 0.0f,
+        0.5f * -hardware_width(),
+        0.5f * hardware_width(),
+        0.5f * hardware_height(),
+        0.5f * -hardware_height(),
         0.0f,
         1000.0f,
         rstate.proj
     );
+
+    float dx = state.camera_x - hardware_width() * 0.5f;
+    float dy = state.camera_y - hardware_height() * 0.5f;
+
+    static float rotation = 0.0f;
+    rotation += 0.01f * state.render_step;
+
+    mat4 view;
+    glm_look(
+        vec3{ state.camera_x, state.camera_y, 0.0f },   // eye
+        vec3{ 0.0f, 0.0f, -1.0f },                      // dir
+        vec3{ sin( rotation ), cos( rotation ), 0.0f }, // up
+        view
+    );
+    glm_mat4_mul( rstate.proj, view, rstate.proj );
 }
 
 void render_init()
@@ -302,6 +325,19 @@ static void render_room()
     bg_fill.render();
 }
 
+static void render_black()
+{
+    sprite_t fill;
+    fill.rect = {
+        -5.0f,
+        -5.0f,
+        (float) hardware_width() + 10.0f,
+        (float) hardware_height() + 10.0f };
+    fill.color = color_black;
+    fill.alpha = fmax( 0.0f, sin( state.render_time ) );
+    fill.render();
+}
+
 void render()
 {
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
@@ -319,4 +355,5 @@ void render()
     render_blocks();
     render_paddle();
     render_ball();
+    render_black();
 }

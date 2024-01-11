@@ -1,8 +1,7 @@
-<!doctype html>
-<html lang="en-us">
-  <head>
+<!DOCTYPE html>
+<html lang="en-us"><head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>THE GAME</title>
     <style>
         body {
@@ -14,17 +13,99 @@
             height: 600px;
             margin: 0px auto;
         }
+	.moveAway
+	{
+		animation-duration: 1s;
+		animation-name: moveAway;
+		animation-fill-mode: forwards;
+	}
+	.moveBack
+	{
+		animation-duration: 1s;
+		animation-name: moveBack;
+		animation-fill-mode: forwards;
+	}
+	.funnyColors
+	{
+		animation-duration: 30s;
+		animation-iteration-count: infinite;
+		animation-name: funnyColors;
+	}
+	#funny
+	{
+		position: absolute;
+	}
+	
+	@keyframes funnyColors
+	{
+		0%
+		{
+			background-color: rgb(0, 0, 0);
+		}
+		20%
+		{
+			background-color: rgb(255, 0, 0);
+		}
+		40%
+		{
+			background-color: rgb(0, 255, 0);
+		}
+		60%
+		{
+			background-color: rgb(0, 0, 255);
+		}
+		80%
+		{
+			background-color: rgb(0, 255, 0);
+		}
+		90%
+		{
+			background-color: rgb(255, 0, 0);
+		}
+		100%
+		{
+			background-color: rgb(0, 0, 0);
+		}
+
+	}
+	@keyframes moveAway
+	{
+		from
+		{
+			rotate: 20deg;
+			left: 0vw;
+		}
+		to
+		{
+			rotate: 0deg;
+			left: 98vw;
+		}
+	}
+	@keyframes moveBack
+	{
+		from
+		{
+			rotate: -20deg;
+			left: 98vw;
+		}
+		to
+		{
+			rotate: 0deg;
+			left: 0vw;
+		}
+	}
     </style>
   </head>
-  <body>
+  <body style="margin: 0;">
+	<button type="button" id="funny" >Login</button>
 
     <h1 style="text-align: center">IN PROGRESS</h1>
 
     <div id="canvas-container">
-      <canvas class="emscripten" id="canvas" width="800" height="600" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+      <canvas class="emscripten" id="canvas" width="800" height="600" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     </div>
 
-    <script type='text/javascript'>
+    <script type="text/javascript">
       var Module = {
         print: (function() {
           return function(text) {
@@ -39,7 +120,28 @@
           return canvas;
         })(),
       };
+
+      let login = document.getElementById("funny");
+      function addMove()
+      {
+	      login.classList.remove("moveBack");
+		login.classList.add("moveAway");
+      }
+      function removeMove()
+      {
+	      login.classList.remove("moveAway");
+	      login.classList.add("moveBack");
+      }
+      function clicked()
+      {
+		document.body.classList.add("funnyColors");
+	      login.innerHTML = "Colors!!!";
+      }
+      login.addEventListener("mouseover", addMove);
+      login.addEventListener("animationend", removeMove);
+      login.addEventListener("click", clicked);
+
     </script>
     {{{ SCRIPT }}}
-  </body>
-</html>
+
+</body></html>

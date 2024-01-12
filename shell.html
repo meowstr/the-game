@@ -3,21 +3,24 @@
 <!-- meta tags -->
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>THE GAME</title>
     <style>
+	@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Silkscreen:wght@400;700&display=swap');
         body {
             background-color: black;
             color: white;
         }
 	.fade
 	{
-		animation-name: fade;
-		animation-duration: 1s;
+		animation-name: flicker;
+		animation-duration: 0.35s;
 		animation-fill-mode: forwards;
 	}
 	#terminal-container
 	{
+		font-family: "IBM Plex Mono", monospace;
 		position: absolute;
 		top: 0;
 		background-color: rgb(0, 0, 0);
@@ -25,11 +28,47 @@
 		height: 100%;
 
 	}
+	#ip
+	{
+		font-family: "silkscreen", sans-serif;
+	}
         #canvas-container {
             width: 800px;
             height: 600px;
             margin: 0px auto;
         }
+	@keyframes flicker
+	{
+		0%
+		{
+			opacity: 0.0;
+		}
+
+		20%
+		{
+			opacity: 1.0;
+		}
+
+		40%
+		{
+			opacity: 1.0;
+		}
+
+		60%
+		{
+			opacity: 1.0;
+		}
+
+		80%
+		{
+			opacity: 0.0;
+		}
+
+		100%
+		{
+			opacoty: 1.0;
+		}
+	}
 	@keyframes fade
 	{
 		from
@@ -39,7 +78,7 @@
 
 		to
 		{
-			opacity: 0.0;
+			opacoty: 0.0;
 		}
 	}
     </style>
@@ -50,7 +89,7 @@
 		  <h1 id="term-text">[pogchamp@archlinux ~] $ </h1>
 	  </div>
 
-    <h1 style="text-align: center">IN PROGRESS</h1>
+    <h1 id="ip" style="text-align: center">IN PROGRESS</h1>
 
     <div id="canvas-container">
       <canvas class="emscripten" id="canvas" width="800" height="600" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
@@ -72,19 +111,6 @@
         })(),
       };
 
-      /* Buffered, won't work.
-
-	let command = "./breakout";
-	for(let i = 0 ; i < command.length ; i++)
-	{
-		setTimeout(() => 
-			{
-				document.getElementById("term-text").innerHTML += command[i];
-			}, 50)
-	}
-
-      */
-
 	let command = "./breakout";
 	let i = 0;
       	function type()
@@ -99,9 +125,11 @@
 
 	function addFade()
 	{
-	    document.getElementById("terminal-container").classList.add("fade");
-		setTimeout(() => {document.getElementById("terminal-container").remove();}, 1000);
+		// No I won't make a variable :3c
+	    	document.getElementById("terminal-container").classList.add("fade");
+		document.getElementById("terminal-container").addEventListener("animationend", () => {document.getElementById("terminal-container").remove();});
 	}
+
       	type();
       	setTimeout(addFade, 1000);
     </script>

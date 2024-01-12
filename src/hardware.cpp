@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <emscripten.h>
+#include <emscripten/html5.h>
 
 #include "logging.hpp"
 
@@ -20,6 +21,7 @@ int hardware_init()
         return 1;
     }
 
+    glfwWindowHint( GLFW_RESIZABLE, 1 );
     hardware.window = glfwCreateWindow(
         hardware.width,
         hardware.height,
@@ -35,6 +37,28 @@ int hardware_init()
 
     glfwMakeContextCurrent( hardware.window );
 
+    // glfwSetWindowSizeCallback( hardware.window, handle_resize );
+
+    {
+        double width, height;
+        emscripten_get_element_css_size( "canvas", &width, &height );
+        emscripten_set_canvas_element_size(
+            "canvas",
+            int( width ),
+            int( height )
+        );
+        // emscripten_set_resize_callback(
+        //     "canvas",
+        //     nullptr,
+        //     false,
+        //     on_web_display_size_changed
+        //);
+
+        hardware.width = (int) width;
+        hardware.height = (int) height;
+    }
+
+    glfwSetWindowSize( hardware.window, hardware.width, hardware.height );
     glViewport( 0, 0, hardware.width, hardware.height );
 
     return 0;

@@ -28,15 +28,30 @@
 		height: 100%;
 
 	}
+    .emscripten {
+        position: absolute;
+    top: 0px;
+    left: 0px;
+    margin: 0px;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: block;
+    z-index: -1
+    }
+
 	#ip
 	{
 		font-family: "silkscreen", sans-serif;
 	}
-        #canvas-container {
-            width: 800px;
-            height: 600px;
-            margin: 0px auto;
-        }
+
+    #canvas-container {
+        width: 800px;
+        height: 600px;
+        margin: 0px auto;
+    }
+
 	@keyframes flicker
 	{
 		0%
@@ -80,7 +95,7 @@
     <h1 id="ip" style="text-align: center">IN PROGRESS</h1>
 
     <div id="canvas-container">
-      <canvas class="emscripten" id="canvas" width="800" height="600" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     </div>
 
     <script type="text/javascript">

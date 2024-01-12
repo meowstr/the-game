@@ -14,28 +14,6 @@
 #include <math.h>
 #include <vector>
 
-// render state
-struct {
-    pos_buffer_t triangle_buffer;
-    pos_buffer_t quad_buffer;
-
-    struct {
-        int id;
-        int proj;
-        int model;
-        int color;
-    } shader;
-
-    mat4 model;
-    mat4 proj;
-
-    float * ball_tail_x;
-    float * ball_tail_y;
-    int ball_tail_count;
-    int ball_tail_front;
-
-} rstate;
-
 struct sprite_t {
     rect_t rect;
     color_t color;
@@ -45,32 +23,70 @@ struct sprite_t {
     void render();
 };
 
+// render state
+struct {
+    vbuffer_t quad_buffer;
+
+    vbuffer_t fb_pos_buffer;
+    vbuffer_t fb_uv_buffer;
+
+    struct {
+        int id;
+        int proj;
+        int model;
+        int color;
+    } shader1;
+
+    struct {
+        int id;
+        int texture;
+        int amount;
+    } shader2;
+
+    mat4 model;
+    mat4 proj;
+
+    float * ball_tail_x;
+    float * ball_tail_y;
+    int ball_tail_count;
+    int ball_tail_front;
+
+    // center camera
+    float camera_x;
+    float camera_y;
+
+    framebuffer_t fb1;
+
+    float abberation_timer;
+
+} intern;
+
 static void init_ball_tail()
 {
     const int cap = 64;
 
-    rstate.ball_tail_count = cap;
-    rstate.ball_tail_front = 0;
-    rstate.ball_tail_x = new float[ cap ];
-    rstate.ball_tail_y = new float[ cap ];
+    intern.ball_tail_count = cap;
+    intern.ball_tail_front = 0;
+    intern.ball_tail_x = new float[ cap ];
+    intern.ball_tail_y = new float[ cap ];
 }
 
 static void push_ball_tail_helper( float x, float y )
 {
-    rstate.ball_tail_front--;
-    rstate.ball_tail_front += rstate.ball_tail_count;
-    rstate.ball_tail_front %= rstate.ball_tail_count;
+    intern.ball_tail_front--;
+    intern.ball_tail_front += intern.ball_tail_count;
+    intern.ball_tail_front %= intern.ball_tail_count;
 
-    rstate.ball_tail_x[ rstate.ball_tail_front ] = x;
-    rstate.ball_tail_y[ rstate.ball_tail_front ] = y;
+    intern.ball_tail_x[ intern.ball_tail_front ] = x;
+    intern.ball_tail_y[ intern.ball_tail_front ] = y;
 }
 
 static void push_ball_tail()
 {
     const int interp = 4;
 
-    float last_x = rstate.ball_tail_x[ rstate.ball_tail_front ];
-    float last_y = rstate.ball_tail_y[ rstate.ball_tail_front ];
+    float last_x = intern.ball_tail_x[ intern.ball_tail_front ];
+    float last_y = intern.ball_tail_y[ intern.ball_tail_front ];
     float new_x = state.ball_x;
     float new_y = state.ball_y;
 
@@ -82,34 +98,75 @@ static void push_ball_tail()
     }
 }
 
-static void init_shader()
+static void init_shader1()
 {
-    const char * v_shader_str = "#version 100                        \n"
-                                "attribute vec3 a_pos;               \n"
-                                "uniform mat4 u_proj;                \n"
-                                "uniform mat4 u_model;               \n"
-                                "void main()                         \n"
-                                "{                                   \n"
-                                "   vec4 pos = vec4(a_pos, 1.0);     \n"
-                                "   gl_Position = u_proj *           \n"
-                                "                 u_model * pos;     \n"
-                                "}                                   \n";
+    const char * v_shader_str = //
+        "#version 100                        \n"
+        "attribute vec3 a_pos;               \n"
+        "uniform mat4 u_proj;                \n"
+        "uniform mat4 u_model;               \n"
+        "void main()                         \n"
+        "{                                   \n"
+        "   vec4 pos = vec4(a_pos, 1.0);     \n"
+        "   gl_Position = u_proj *           \n"
+        "                 u_model * pos;     \n"
+        "}                                   \n";
 
-    const char * f_shader_str = "#version 100                        \n"
-                                "precision lowp float;               \n"
-                                "uniform vec4 u_color;               \n"
-                                "void main()                         \n"
-                                "{                                   \n"
-                                "  gl_FragColor = u_color;           \n"
-                                "}                                   \n";
+    const char * f_shader_str = //
+        "#version 100                        \n"
+        "precision lowp float;               \n"
+        "uniform vec4 u_color;               \n"
+        "void main()                         \n"
+        "{                                   \n"
+        "  gl_FragColor = u_color;           \n"
+        "}                                   \n";
 
     int id = build_shader( v_shader_str, f_shader_str );
-    rstate.shader.id = id;
-    rstate.shader.proj = find_uniform( id, "u_proj" );
-    rstate.shader.model = find_uniform( id, "u_model" );
-    rstate.shader.color = find_uniform( id, "u_color" );
+    intern.shader1.id = id;
+    intern.shader1.proj = find_uniform( id, "u_proj" );
+    intern.shader1.model = find_uniform( id, "u_model" );
+    intern.shader1.color = find_uniform( id, "u_color" );
 
     glBindAttribLocation( id, 0, "a_pos" );
+}
+
+static void init_shader2()
+{
+    const char * v_shader_str = //
+        "#version 100                           \n"
+        "attribute vec2 a_pos;                  \n"
+        "attribute vec2 a_uv;                   \n"
+        "varying vec2 v_uv;                     \n"
+        "void main()                            \n"
+        "{                                      \n"
+        "   v_uv = a_uv;                        \n"
+        "   gl_Position =                       \n"
+        "     vec4(a_pos.x, a_pos.y, 0.0, 1.0); \n"
+        "}                                      \n";
+
+    const char * f_shader_str = //
+        "#version 100                                 \n"
+        "precision lowp float;                        \n"
+        "uniform sampler2D u_texture;                 \n"
+        "uniform float u_amount;                      \n"
+        "varying vec2 v_uv;                           \n"
+        "void main()                                  \n"
+        "{                                            \n"
+        "  vec2 d = vec2(0.008, 0.008) * u_amount;    \n"
+        "  vec3 c;                                    \n"
+        "  c.r = texture2D(u_texture, v_uv + d).r;    \n"
+        "  c.g = texture2D(u_texture, v_uv    ).g;    \n"
+        "  c.b = texture2D(u_texture, v_uv - d).b;    \n"
+        "  gl_FragColor = vec4(c, 1.0);               \n"
+        "}                                            \n";
+
+    int id = build_shader( v_shader_str, f_shader_str );
+    intern.shader2.id = id;
+    intern.shader2.texture = find_uniform( id, "u_texture" );
+    intern.shader2.amount = find_uniform( id, "u_amount" );
+
+    glBindAttribLocation( id, 0, "a_pos" );
+    glBindAttribLocation( id, 1, "a_uv" );
 }
 
 void sprite_t::render()
@@ -135,32 +192,23 @@ void sprite_t::render()
     axis[ 1 ] = 0.0f;
     axis[ 2 ] = 1.0f;
 
-    glm_mat4_identity( rstate.model );
-    glm_translate( rstate.model, translate );
-    glm_scale( rstate.model, scale );
-    glm_translate( rstate.model, vec3{ 0.5f, 0.5f, 0.0f } );
-    glm_rotate( rstate.model, rotation, axis );
-    glm_translate( rstate.model, vec3{ -0.5f, -0.5f, 0.0f } );
+    glm_mat4_identity( intern.model );
+    glm_translate( intern.model, translate );
+    glm_scale( intern.model, scale );
+    glm_translate( intern.model, vec3{ 0.5f, 0.5f, 0.0f } );
+    glm_rotate( intern.model, rotation, axis );
+    glm_translate( intern.model, vec3{ -0.5f, -0.5f, 0.0f } );
 
-    set_uniform( rstate.shader.proj, rstate.proj );
-    set_uniform( rstate.shader.model, rstate.model );
-    set_uniform( rstate.shader.color, color4 );
+    set_uniform( intern.shader1.proj, intern.proj );
+    set_uniform( intern.shader1.model, intern.model );
+    set_uniform( intern.shader1.color, color4 );
 
-    rstate.quad_buffer.render();
+    intern.quad_buffer.enable( 0 );
+    glDrawArrays( GL_TRIANGLES, 0, intern.quad_buffer.element_count );
 }
 
 static void update_camera()
 {
-    // glm_ortho(
-    //     0.0f,
-    //     hardware_width(),
-    //     hardware_height(),
-    //     0.0f,
-    //     0.0f,
-    //     1000.0f,
-    //     rstate.proj
-    //);
-
     glm_ortho(
         0.5f * -hardware_width(),
         0.5f * hardware_width(),
@@ -168,42 +216,48 @@ static void update_camera()
         0.5f * -hardware_height(),
         0.0f,
         1000.0f,
-        rstate.proj
+        intern.proj
     );
 
-    float dx = state.camera_x - hardware_width() * 0.5f;
-    float dy = state.camera_y - hardware_height() * 0.5f;
-
     static float rotation = 0.0f;
-    rotation += 0.01f * state.render_step;
+    rotation += 0.03f * state.render_step;
 
     mat4 view;
     glm_look(
-        vec3{ state.camera_x, state.camera_y, 0.0f },   // eye
+        vec3{ intern.camera_x, intern.camera_y, 0.0f }, // eye
         vec3{ 0.0f, 0.0f, -1.0f },                      // dir
         vec3{ sin( rotation ), cos( rotation ), 0.0f }, // up
         view
     );
-    glm_mat4_mul( rstate.proj, view, rstate.proj );
+    glm_mat4_mul( intern.proj, view, intern.proj );
 }
 
 void render_init()
 {
-    const float triangle_data[] =
-        { -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f };
-
     float quad_data[ 18 ];
     rect_t{ 0.0f, 0.0f, 1.0f, 1.0f }.vertices( quad_data );
 
-    rstate.triangle_buffer.init();
-    rstate.triangle_buffer.set( triangle_data, 3 );
+    float fb_pos_data[ 12 ];
+    rect_t{ -1.0f, -1.0f, 2.0f, 2.0f }.vertices_2d( fb_pos_data );
 
-    rstate.quad_buffer.init();
-    rstate.quad_buffer.set( quad_data, 6 );
+    float fb_uv_data[ 12 ];
+    rect_t{ 0.0f, 0.0f, 1.0f, 1.0f }.vertices_2d( fb_uv_data );
 
-    glm_mat4_identity( rstate.model );
+    intern.quad_buffer.init( 3 );
+    intern.quad_buffer.set( quad_data, 6 );
 
-    init_shader();
+    intern.fb_pos_buffer.init( 2 );
+    intern.fb_pos_buffer.set( fb_pos_data, 6 );
+
+    intern.fb_uv_buffer.init( 2 );
+    intern.fb_uv_buffer.set( fb_uv_data, 6 );
+
+    intern.fb1.init( hardware_width(), hardware_height() );
+
+    glm_mat4_identity( intern.model );
+
+    init_shader1();
+    init_shader2();
 
     init_ball_tail();
 
@@ -263,14 +317,14 @@ static void render_ball()
 
     ball.render();
 
-    for ( int i = 0; i < rstate.ball_tail_count; i++ ) {
-        float t = (float) i / rstate.ball_tail_count;
+    for ( int i = 0; i < intern.ball_tail_count; i++ ) {
+        float t = (float) i / intern.ball_tail_count;
         float radius = ( 1.0f - ( t * 0.5f ) ) * state.ball_radius;
-        int j = ( i + rstate.ball_tail_front ) % rstate.ball_tail_count;
+        int j = ( i + intern.ball_tail_front ) % intern.ball_tail_count;
 
         ball.rect = {
-            rstate.ball_tail_x[ j ] - state.ball_radius,
-            rstate.ball_tail_y[ j ] - state.ball_radius,
+            intern.ball_tail_x[ j ] - state.ball_radius,
+            intern.ball_tail_y[ j ] - state.ball_radius,
             2 * radius,
             2 * radius,
         };
@@ -287,13 +341,13 @@ static void render_room()
 
     sprite_t bg_fill;
     bg_fill.rect = { 0.0f, 0.0f, (float) state.room_w, (float) state.room_h };
-    bg_fill.color = { 0.1f, 0.0f, 0.0f };
+    bg_fill.color = { 0.0f, 0.0f, 0.0f };
 
     sprite_t bg_outline;
     bg_outline.rect = bg_fill.rect;
     bg_outline.rect.margin( -outline_width );
     bg_outline.rect.h -= outline_width;
-    bg_outline.color = { 1.0f, 0.0f, 0.0f };
+    bg_outline.color = color_white;
 
     bg_outline.render();
 
@@ -305,11 +359,11 @@ static void render_room()
         50.0f };
 
     if ( state.room_state == 0 ) {
-        wall_mask.color = color_red;
+        wall_mask.color = color_white;
     }
 
     if ( state.room_state == 1 ) {
-        wall_mask.color = color_yellow;
+        wall_mask.color = color_red;
     }
 
     if ( state.room_state == 2 ) {
@@ -338,22 +392,58 @@ static void render_black()
     fill.render();
 }
 
+static void tick_abberation()
+{
+    if ( state.ball_hit ) intern.abberation_timer = 1.0f;
+
+    if ( intern.abberation_timer <= 0.0f ) return;
+
+    intern.abberation_timer -= 5.0f * state.render_step;
+
+    if ( intern.abberation_timer <= 0.0f ) {
+        intern.abberation_timer = 0.0f;
+    }
+}
+
 void render()
 {
-    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-    glClear( GL_COLOR_BUFFER_BIT );
+    glBindFramebuffer( GL_FRAMEBUFFER, intern.fb1.id );
 
-    glUseProgram( rstate.shader.id );
+    {
+        glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+        glClear( GL_COLOR_BUFFER_BIT );
 
-    state.camera_x = state.ball_x;
-    state.camera_y = state.ball_y;
+        glUseProgram( intern.shader1.id );
 
-    update_camera();
-    push_ball_tail();
+        intern.camera_x = state.ball_x;
+        intern.camera_y = state.ball_y;
 
-    render_room();
-    render_blocks();
-    render_paddle();
-    render_ball();
-    render_black();
+        update_camera();
+        push_ball_tail();
+
+        render_room();
+        render_blocks();
+        render_paddle();
+        render_ball();
+        // render_black();
+    }
+
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+    {
+        tick_abberation();
+
+        glUseProgram( intern.shader2.id );
+
+        glBindTexture( GL_TEXTURE_2D, intern.fb1.texture );
+        set_uniform( intern.shader2.texture, 0 );
+
+        float x = sin( intern.abberation_timer * M_PI );
+        set_uniform( intern.shader2.amount, x );
+        set_uniform( intern.shader2.amount, 1.0f );
+
+        intern.fb_pos_buffer.enable( 0 );
+        intern.fb_uv_buffer.enable( 1 );
+        glDrawArrays( GL_TRIANGLES, 0, 6 );
+    }
 }

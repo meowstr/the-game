@@ -35,11 +35,9 @@ struct state_t {
     int room_w;
     int room_h;
 
-    // center camera
-    float camera_x;
-    float camera_y;
-
     int room_state;
+
+    int ball_hit;
 };
 
 extern state_t state;

@@ -27,6 +27,27 @@ void rect_t::vertices( float * out_data ) const
     out_data[ 17 ] = 0.0f;
 }
 
+void rect_t::vertices_2d( float * out_data ) const
+{
+    out_data[ 0 ] = x;
+    out_data[ 1 ] = y;
+
+    out_data[ 2 ] = x + w;
+    out_data[ 3 ] = y;
+
+    out_data[ 4 ] = x;
+    out_data[ 5 ] = y + h;
+
+    out_data[ 6 ] = x + w;
+    out_data[ 7 ] = y + h;
+
+    out_data[ 8 ] = x + w;
+    out_data[ 9 ] = y;
+
+    out_data[ 10 ] = x;
+    out_data[ 11 ] = y + h;
+}
+
 void rect_t::margin( float amount )
 {
     x += amount;

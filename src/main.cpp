@@ -140,6 +140,8 @@ static int collide_corner()
 
 static void tick_ball()
 {
+    state.ball_hit = 0;
+
     if ( state.throw_timer > 0.0f ) {
         state.throw_timer -= state.tick_step;
         state.ball_x = state.paddle_rect.center_x();
@@ -175,6 +177,8 @@ static void tick_ball()
 
     state.paddle_touched = collide_ball( state.paddle_rect );
 
+    if ( state.paddle_touched ) state.ball_hit = 1;
+
     for ( int i = 0; i < state.block_count; i++ ) {
         int & b_state = state.block_state_list[ i ];
 
@@ -183,6 +187,8 @@ static void tick_ball()
         int collided = collide_ball( state.block_rect_list[ i ] );
 
         if ( collided ) {
+            state.ball_hit = 1;
+
             if ( b_state == 0 ) {
                 b_state = 1;
                 break;
@@ -226,10 +232,6 @@ static void init()
 
     state.room_w = 640;
     state.room_h = 480;
-
-    // center on the room
-    state.camera_x = state.room_w * 0.5f;
-    state.camera_y = state.room_h * 0.5f;
 
     int cols = 10;
     int rows = 6;

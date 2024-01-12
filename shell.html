@@ -1,103 +1,54 @@
 <!DOCTYPE html>
 <html lang="en-us"><head>
+<!-- meta tags -->
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
     <title>THE GAME</title>
     <style>
         body {
             background-color: black;
             color: white;
         }
+	.fade
+	{
+		animation-name: fade;
+		animation-duration: 1s;
+		animation-fill-mode: forwards;
+	}
+	#terminal-container
+	{
+		position: absolute;
+		top: 0;
+		background-color: rgb(0, 0, 0);
+		width: 100%;
+		height: 100%;
+
+	}
         #canvas-container {
             width: 800px;
             height: 600px;
             margin: 0px auto;
         }
-	.moveAway
+	@keyframes fade
 	{
-		animation-duration: 1s;
-		animation-name: moveAway;
-		animation-fill-mode: forwards;
-	}
-	.moveBack
-	{
-		animation-duration: 1s;
-		animation-name: moveBack;
-		animation-fill-mode: forwards;
-	}
-	.funnyColors
-	{
-		animation-duration: 30s;
-		animation-iteration-count: infinite;
-		animation-name: funnyColors;
-	}
-	#funny
-	{
-		position: absolute;
-	}
-	
-	@keyframes funnyColors
-	{
-		0%
+		from
 		{
-			background-color: rgb(0, 0, 0);
-		}
-		20%
-		{
-			background-color: rgb(255, 0, 0);
-		}
-		40%
-		{
-			background-color: rgb(0, 255, 0);
-		}
-		60%
-		{
-			background-color: rgb(0, 0, 255);
-		}
-		80%
-		{
-			background-color: rgb(0, 255, 0);
-		}
-		90%
-		{
-			background-color: rgb(255, 0, 0);
-		}
-		100%
-		{
-			background-color: rgb(0, 0, 0);
+			opacity: 1.0;
 		}
 
-	}
-	@keyframes moveAway
-	{
-		from
-		{
-			rotate: 20deg;
-			left: 0vw;
-		}
 		to
 		{
-			rotate: 0deg;
-			left: 98vw;
-		}
-	}
-	@keyframes moveBack
-	{
-		from
-		{
-			rotate: -20deg;
-			left: 98vw;
-		}
-		to
-		{
-			rotate: 0deg;
-			left: 0vw;
+			opacity: 0.0;
 		}
 	}
     </style>
   </head>
   <body style="margin: 0;">
-	<button type="button" id="funny" >Login</button>
+
+	  <div id="terminal-container">
+		  <h1 id="term-text">[pogchamp@archlinux ~] $ </h1>
+	  </div>
 
     <h1 style="text-align: center">IN PROGRESS</h1>
 
@@ -121,26 +72,37 @@
         })(),
       };
 
-      let login = document.getElementById("funny");
-      function addMove()
-      {
-	      login.classList.remove("moveBack");
-		login.classList.add("moveAway");
-      }
-      function removeMove()
-      {
-	      login.classList.remove("moveAway");
-	      login.classList.add("moveBack");
-      }
-      function clicked()
-      {
-		document.body.classList.add("funnyColors");
-	      login.innerHTML = "Colors!!!";
-      }
-      login.addEventListener("mouseover", addMove);
-      login.addEventListener("animationend", removeMove);
-      login.addEventListener("click", clicked);
+      /* Buffered, won't work.
 
+	let command = "./breakout";
+	for(let i = 0 ; i < command.length ; i++)
+	{
+		setTimeout(() => 
+			{
+				document.getElementById("term-text").innerHTML += command[i];
+			}, 50)
+	}
+
+      */
+
+	let command = "./breakout";
+	let i = 0;
+      	function type()
+      	{
+		if(i < command.length)
+		{
+	    		document.getElementById("term-text").innerHTML += command[i];
+		}
+	    	i++;
+	    	setTimeout(type, ((Math.random() % 51) + 50));
+      	}
+
+	function addFade()
+	{
+	    document.getElementById("terminal-container").classList.add("fade");
+	}
+      	type();
+      	setTimeout(addFade, 1000);
     </script>
     {{{ SCRIPT }}}
 

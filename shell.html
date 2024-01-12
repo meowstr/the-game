@@ -100,6 +100,7 @@
 	function addFade()
 	{
 	    document.getElementById("terminal-container").classList.add("fade");
+		setTimeout(() => {document.getElementById("terminal-container").remove();}, 1000);
 	}
       	type();
       	setTimeout(addFade, 1000);

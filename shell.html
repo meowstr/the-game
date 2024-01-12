@@ -12,7 +12,7 @@
             background-color: black;
             color: white;
         }
-	.fade
+	.flicker
 	{
 		animation-name: flicker;
 		animation-duration: 0.35s;
@@ -66,19 +66,7 @@
 
 		100%
 		{
-			opacoty: 1.0;
-		}
-	}
-	@keyframes fade
-	{
-		from
-		{
 			opacity: 1.0;
-		}
-
-		to
-		{
-			opacoty: 0.0;
 		}
 	}
     </style>
@@ -86,7 +74,7 @@
   <body style="margin: 0;">
 
 	  <div id="terminal-container">
-		  <h1 id="term-text">[pogchamp@archlinux ~] $ </h1>
+		  <h1>[pogchamp@archlinux ~] $ <span id="term-text"></span></h1>
 	  </div>
 
     <h1 id="ip" style="text-align: center">IN PROGRESS</h1>
@@ -117,21 +105,21 @@
       	{
 		if(i < command.length)
 		{
-	    		document.getElementById("term-text").innerHTML += command[i];
+	    		document.getElementById("term-text").innerHTML = command.substring(0, i + 1) + '█';
 		}
 	    	i++;
 	    	setTimeout(type, ((Math.random() % 51) + 50));
       	}
 
-	function addFade()
+	function addFlicker()
 	{
 		// No I won't make a variable :3c
-	    	document.getElementById("terminal-container").classList.add("fade");
+	    	document.getElementById("terminal-container").classList.add("flicker");
 		document.getElementById("terminal-container").addEventListener("animationend", () => {document.getElementById("terminal-container").remove();});
 	}
 
       	type();
-      	setTimeout(addFade, 1000);
+      	setTimeout(addFlicker, 1000);
     </script>
     {{{ SCRIPT }}}
 

@@ -152,7 +152,7 @@ static void init_shader2()
         "varying vec2 v_uv;                           \n"
         "void main()                                  \n"
         "{                                            \n"
-        "  vec2 d = vec2(0.008, 0.008) * u_amount;    \n"
+        "  vec2 d = vec2(0.003, 0.003) * u_amount;    \n"
         "  vec3 c;                                    \n"
         "  c.r = texture2D(u_texture, v_uv + d).r;    \n"
         "  c.g = texture2D(u_texture, v_uv    ).g;    \n"
@@ -425,7 +425,7 @@ void render()
         render_blocks();
         render_paddle();
         render_ball();
-        render_black();
+        //render_black();
     }
 
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );

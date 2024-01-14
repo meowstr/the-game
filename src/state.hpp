@@ -26,8 +26,10 @@ struct state_t {
     float ball_x;
     float ball_y;
     float ball_radius;
-    float ball_vx;
-    float ball_vy;
+
+    float ball_dir_x;
+    float ball_dir_y;
+    float ball_speed;
 
     float throw_timer;
 

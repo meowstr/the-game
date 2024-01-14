@@ -66,25 +66,25 @@ static int collide_ball( rect_t rect )
     // left edge
     if ( closest == dx1 ) {
         state.ball_x = rect.x;
-        state.ball_vx *= -1;
+        state.ball_dir_x *= -1;
     }
 
     // right edge
     if ( closest == dx2 ) {
         state.ball_x = rect.x + rect.w;
-        state.ball_vx *= -1;
+        state.ball_dir_x *= -1;
     }
 
     // top edge
     if ( closest == dy1 ) {
         state.ball_y = rect.y;
-        state.ball_vy *= -1;
+        state.ball_dir_y *= -1;
     }
 
     // bottom edge
     if ( closest == dy2 ) {
         state.ball_y = rect.y + rect.h;
-        state.ball_vy *= -1;
+        state.ball_dir_y *= -1;
     }
 
     return 1;
@@ -99,7 +99,7 @@ static void tick_blocks()
 
         if ( b_state != 2 ) continue;
 
-        const float speed = 5.0f;
+        const float speed = 2.0f;
 
         b_timer -= state.tick_step * speed;
         b_rect.margin( -100.0f * state.tick_step );
@@ -142,6 +142,14 @@ static void tick_ball()
 {
     state.ball_hit = 0;
 
+    // do funny
+    float dtheta = 0.23 * sin( 20 * state.tick_time );
+    float theta = atan2( state.ball_dir_y, state.ball_dir_x ) + dtheta;
+    state.ball_dir_x = cos( theta );
+    state.ball_dir_y = sin( theta );
+
+    //state.ball_speed = 150 + 100 * sin( state.tick_time );
+
     if ( state.throw_timer > 0.0f ) {
         state.throw_timer -= state.tick_step;
         state.ball_x = state.paddle_rect.center_x();
@@ -149,25 +157,25 @@ static void tick_ball()
         return;
     }
 
-    state.ball_x += state.ball_vx * state.tick_step;
-    state.ball_y += state.ball_vy * state.tick_step;
+    state.ball_x += state.ball_speed * state.ball_dir_x * state.tick_step;
+    state.ball_y += state.ball_speed * state.ball_dir_y * state.tick_step;
 
     if ( state.ball_x < 0.0f ) {
         if ( collide_corner() ) return;
         state.ball_x = 0.0f;
-        state.ball_vx *= -1;
+        state.ball_dir_x *= -1;
     }
 
     if ( state.ball_x > state.room_w ) {
         if ( collide_corner() ) return;
         state.ball_x = state.room_w;
-        state.ball_vx *= -1;
+        state.ball_dir_x *= -1;
     }
 
     if ( state.ball_y < 0.0f ) {
         if ( collide_corner() ) return;
         state.ball_y = 0.0f;
-        state.ball_vy *= -1;
+        state.ball_dir_y *= -1;
     }
 
     if ( state.ball_y > state.room_h ) {
@@ -220,8 +228,9 @@ static void loop()
 
 static void reset_ball()
 {
-    state.ball_vx = 250.0f;
-    state.ball_vy = -250.0f;
+    state.ball_dir_x = 1.4f;
+    state.ball_dir_y = -1.4f;
+    state.ball_speed = 250.0f;
 
     state.throw_timer = 2.0f;
 }
@@ -233,7 +242,7 @@ static void init()
     state.room_w = 640;
     state.room_h = 480;
 
-    int cols = 10;
+    int cols = 20;
     int rows = 6;
 
     int width = state.room_w / cols;
@@ -248,7 +257,7 @@ static void init()
                 (float) height,
             };
 
-            rect.margin( 5 );
+            rect.margin( 8 );
 
             int i = state.block_count;
             state.block_count++;

@@ -425,7 +425,7 @@ void render()
         render_blocks();
         render_paddle();
         render_ball();
-        // render_black();
+        render_black();
     }
 
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );

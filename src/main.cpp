@@ -138,18 +138,25 @@ static int collide_corner()
     return 0;
 }
 
+/// compute how close [0.0, 1.0] the ball is to the last brick
+static void tick_ball_asymmptote() {
+    if ( state.block_count != 1 ) return;
+    
+    float dx = state.block_rect_list[ 0 ].x - state.ball_x;
+    float dy = state.block_rect_list[ 0 ].y - state.ball_y;
+
+    float dist = sqrt( dx * dx + dy * dy );
+
+    state.ball_speed = clamp( (dist - 20.0f) * 1.0f, 0.0f, 200.0f );
+}
+
 static void tick_ball()
 {
     state.ball_hit = 0;
 
+    tick_ball_asymmptote();
+
     // do funny
-    float dtheta = 0.23 * sin( 20 * state.tick_time );
-    float theta = atan2( state.ball_dir_y, state.ball_dir_x ) + dtheta;
-    state.ball_dir_x = cos( theta );
-    state.ball_dir_y = sin( theta );
-
-    //state.ball_speed = 150 + 100 * sin( state.tick_time );
-
     if ( state.throw_timer > 0.0f ) {
         state.throw_timer -= state.tick_step;
         state.ball_x = state.paddle_rect.center_x();
@@ -230,7 +237,7 @@ static void reset_ball()
 {
     state.ball_dir_x = 1.4f;
     state.ball_dir_y = -1.4f;
-    state.ball_speed = 250.0f;
+    state.ball_speed = 200.0f;
 
     state.throw_timer = 2.0f;
 }
@@ -242,7 +249,7 @@ static void init()
     state.room_w = 640;
     state.room_h = 480;
 
-    int cols = 20;
+    int cols = 10;
     int rows = 6;
 
     int width = state.room_w / cols;
@@ -250,6 +257,7 @@ static void init()
 
     for ( int r = 0; r < rows; r++ ) {
         for ( int c = 0; c < cols; c++ ) {
+
             rect_t rect{
                 (float) c * width,
                 (float) r * height,

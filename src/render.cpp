@@ -313,7 +313,7 @@ static void render_ball()
     sprite_t ball;
     ball.rect = ball_rect;
     ball.color = color_yellow;
-    ball.rotation = state.render_time * 30.0f;
+    ball.rotation = state.render_time * 30.0f * (state.ball_speed / 200.0f);
 
     ball.render();
 
@@ -330,7 +330,7 @@ static void render_ball()
         };
 
         ball.alpha = 1.0f - t;
-        ball.rotation += 0.1f;
+        //ball.rotation += 0.1f;
         ball.render();
     }
 }

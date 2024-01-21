@@ -4,7 +4,7 @@ FLAGS = -std=c++20 -g -Ibuild -Isrc
 RES_FILE = build/res.h
 
 
-web:
+web: bake
 	mkdir -p build
 	emcc       \
 		--shell-file shell.html \
@@ -17,7 +17,7 @@ web:
 		libs/web/*.a            \
 		-o build/index.html
 
-linux:
+linux: bake
 	mkdir -p build
 	g++ ${FLAGS}                 \
 		${SOURCES}               \
@@ -26,7 +26,7 @@ linux:
 		-lglfw                   \
 		-o build/game
 
-windows:
+windows: bake
 	mkdir -p build
 	x86_64-w64-mingw32-g++       \
 		-Isrc/platform           \

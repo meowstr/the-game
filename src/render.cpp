@@ -43,6 +43,13 @@ struct {
         int amount;
     } shader2;
 
+    struct {
+        int id;
+        int proj;
+        int model;
+        int texture;
+    } shader3;
+
     mat4 model;
     mat4 proj;
 
@@ -54,6 +61,7 @@ struct {
     // center camera
     float camera_x;
     float camera_y;
+    float camera_zoom;
 
     framebuffer_t fb1;
 
@@ -100,28 +108,10 @@ static void push_ball_tail()
 
 static void init_shader1()
 {
-    const char * v_shader_str = //
-        "#version 100                        \n"
-        "attribute vec3 a_pos;               \n"
-        "uniform mat4 u_proj;                \n"
-        "uniform mat4 u_model;               \n"
-        "void main()                         \n"
-        "{                                   \n"
-        "   vec4 pos = vec4(a_pos, 1.0);     \n"
-        "   gl_Position = u_proj *           \n"
-        "                 u_model * pos;     \n"
-        "}                                   \n";
-
-    const char * f_shader_str = //
-        "#version 100                        \n"
-        "precision lowp float;               \n"
-        "uniform vec4 u_color;               \n"
-        "void main()                         \n"
-        "{                                   \n"
-        "  gl_FragColor = u_color;           \n"
-        "}                                   \n";
-
-    int id = build_shader( v_shader_str, f_shader_str );
+    int id = build_shader(
+        find_shader_string( "shader1_vertex" ),
+        find_shader_string( "shader1_fragment" )
+    );
     intern.shader1.id = id;
     intern.shader1.proj = find_uniform( id, "u_proj" );
     intern.shader1.model = find_uniform( id, "u_model" );
@@ -132,35 +122,24 @@ static void init_shader1()
 
 static void init_shader2()
 {
-    const char * v_shader_str = //
-        "#version 100                           \n"
-        "attribute vec2 a_pos;                  \n"
-        "attribute vec2 a_uv;                   \n"
-        "varying vec2 v_uv;                     \n"
-        "void main()                            \n"
-        "{                                      \n"
-        "   v_uv = a_uv;                        \n"
-        "   gl_Position =                       \n"
-        "     vec4(a_pos.x, a_pos.y, 0.0, 1.0); \n"
-        "}                                      \n";
+    int id = build_shader(
+        find_shader_string( "shader2_vertex" ),
+        find_shader_string( "shader2_fragment" )
+    );
+    intern.shader2.id = id;
+    intern.shader2.texture = find_uniform( id, "u_texture" );
+    intern.shader2.amount = find_uniform( id, "u_amount" );
 
-    const char * f_shader_str = //
-        "#version 100                                 \n"
-        "precision lowp float;                        \n"
-        "uniform sampler2D u_texture;                 \n"
-        "uniform float u_amount;                      \n"
-        "varying vec2 v_uv;                           \n"
-        "void main()                                  \n"
-        "{                                            \n"
-        "  vec2 d = vec2(0.003, 0.003) * u_amount;    \n"
-        "  vec3 c;                                    \n"
-        "  c.r = texture2D(u_texture, v_uv + d).r;    \n"
-        "  c.g = texture2D(u_texture, v_uv    ).g;    \n"
-        "  c.b = texture2D(u_texture, v_uv - d).b;    \n"
-        "  gl_FragColor = vec4(c, 1.0);               \n"
-        "}                                            \n";
+    glBindAttribLocation( id, 0, "a_pos" );
+    glBindAttribLocation( id, 1, "a_uv" );
+}
 
-    int id = build_shader( v_shader_str, f_shader_str );
+static void init_shader3()
+{
+    int id = build_shader(
+        find_shader_string( "shader3_vertex" ),
+        find_shader_string( "shader3_fragment" )
+    );
     intern.shader2.id = id;
     intern.shader2.texture = find_uniform( id, "u_texture" );
     intern.shader2.amount = find_uniform( id, "u_amount" );
@@ -209,11 +188,12 @@ void sprite_t::render()
 
 static void update_camera()
 {
+    float zoom = intern.camera_zoom;
     glm_ortho(
-        0.5f * -hardware_width(),
-        0.5f * hardware_width(),
-        0.5f * hardware_height(),
-        0.5f * -hardware_height(),
+        0.5f * zoom * -hardware_width(),
+        0.5f * zoom * hardware_width(),
+        0.5f * zoom * hardware_height(),
+        0.5f * zoom * -hardware_height(),
         0.0f,
         1000.0f,
         intern.proj
@@ -243,6 +223,8 @@ void render_init()
     float fb_uv_data[ 12 ];
     rect_t{ 0.0f, 0.0f, 1.0f, 1.0f }.vertices_2d( fb_uv_data );
 
+    // init vertex buffers
+
     intern.quad_buffer.init( 3 );
     intern.quad_buffer.set( quad_data, 6 );
 
@@ -252,14 +234,22 @@ void render_init()
     intern.fb_uv_buffer.init( 2 );
     intern.fb_uv_buffer.set( fb_uv_data, 6 );
 
+    // init frame buffers
+
     intern.fb1.init( hardware_width(), hardware_height() );
 
-    glm_mat4_identity( intern.model );
+    // init shaders
 
     init_shader1();
     init_shader2();
 
+    // init misc
+
     init_ball_tail();
+    intern.camera_zoom = 1.0f;
+    glm_mat4_identity( intern.model );
+
+    // init gl state
 
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // blend alpha
@@ -313,7 +303,7 @@ static void render_ball()
     sprite_t ball;
     ball.rect = ball_rect;
     ball.color = color_yellow;
-    ball.rotation = state.render_time * 30.0f * (state.ball_speed / 200.0f);
+    ball.rotation = state.render_time * 30.0f * ( state.ball_speed / 200.0f );
 
     ball.render();
 
@@ -330,7 +320,7 @@ static void render_ball()
         };
 
         ball.alpha = 1.0f - t;
-        //ball.rotation += 0.1f;
+        // ball.rotation += 0.1f;
         ball.render();
     }
 }
@@ -417,6 +407,7 @@ void render()
 
         intern.camera_x = state.ball_x;
         intern.camera_y = state.ball_y;
+        intern.camera_zoom -= state.render_step * 0.001f;
 
         update_camera();
         push_ball_tail();
@@ -425,7 +416,7 @@ void render()
         render_blocks();
         render_paddle();
         render_ball();
-        //render_black();
+        // render_black();
     }
 
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );

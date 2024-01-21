@@ -138,7 +138,6 @@ static int collide_corner()
     return 0;
 }
 
-/// compute how close [0.0, 1.0] the ball is to the last brick
 static void tick_ball_asymmptote() {
     if ( state.block_count != 1 ) return;
     

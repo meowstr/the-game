@@ -1,8 +1,80 @@
 #include "render_utils.hpp"
 
 #include "logging.hpp"
+#include "res.h"
 
 #include <GLES2/gl2.h>
+
+#include <sstream>
+#include <string>
+#include <vector>
+
+static int match_shader_line( const char * line, const char * name )
+{
+    char buffer[ 128 ];
+    snprintf( buffer, 128, "#shader %s", name );
+
+    return strncmp( line, buffer, strlen( buffer ) ) == 0;
+}
+
+static int match_any_shader_line( const char * line )
+{
+    const char * buffer = "#shader";
+    return strncmp( line, buffer, strlen( buffer ) ) == 0;
+}
+
+// TODO: make this less c++ dependent?
+const char * find_shader_string( const char * name )
+{
+    const unsigned char * shaders = src_shaders_glsl;
+    int len = sizeof( src_shaders_glsl );
+
+    // split into lines
+    std::vector< std::string > lines;
+
+    {
+        std::string line;
+        for ( int i = 0; i < len; i++ ) {
+            if ( shaders[ i ] == '\n' ) {
+                lines.push_back( line );
+                line = "";
+            } else {
+                line += shaders[ i ];
+            }
+        }
+    }
+
+    // find shader line
+    int matched_line = -1;
+    for ( int i = 0; i < std::ssize( lines ); i++ ) {
+        if ( match_shader_line( lines[ i ].c_str(), name ) ) {
+            matched_line = i;
+            break;
+        }
+    }
+
+    // no match
+    if ( matched_line == -1 ) return "";
+
+    // match lines
+    std::vector< std::string > matched_lines;
+    for ( int i = matched_line + 1; i < std::ssize( lines ); i++ ) {
+        // stop when we get to another shader
+        if ( match_any_shader_line( lines[ i ].c_str() ) ) break;
+        matched_lines.push_back( lines[ i ] );
+    }
+
+    // combine lines into one string
+    std::stringstream ss;
+    for ( std::string & line : matched_lines ) {
+        ss << line << "\n";
+    }
+
+    // TODO: lol yea i know
+    static std::string str = ss.str();
+
+    return str.c_str();
+}
 
 static int create_shader( int * out, int type, const char * source )
 {
@@ -219,8 +291,8 @@ void framebuffer_t::init( int width, int height )
 
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
     glFramebufferTexture2D(
         GL_FRAMEBUFFER,

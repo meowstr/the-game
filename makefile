@@ -1,10 +1,11 @@
 SOURCES = src/*.cpp
 HEADERS = src/*.hpp
 LIBS = libs/*.a
-FLAGS = -std=c++20 -g
+FLAGS = -std=c++20 -g -Ibuild
+RES_FILE = build/res.h
 
 
-build/main.html: ${SOURCES} ${HEADERS}
+build/main.html: ${SOURCES} ${HEADERS} bake
 	mkdir -p build
 	emcc       \
 		--shell-file shell.html \
@@ -16,6 +17,12 @@ build/main.html: ${SOURCES} ${HEADERS}
 		${LIBS}                 \
 		-o build/index.html
 
+bake:
+	mkdir -p build
+	rm -rf ${RES_FILE}
+
+	gcc tools/bake.c -o build/bake
+	./build/bake src/shaders.glsl >> ${RES_FILE}
 
 bench:
 	mkdir -p build

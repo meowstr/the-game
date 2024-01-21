@@ -20,6 +20,8 @@ struct framebuffer_t {
     void bind();
 };
 
+const char * find_shader_string( const char * name );
+
 int build_shader( const char * vertex_string, const char * fragment_string );
 
 int find_uniform( int shader, const char * uniform_name );

@@ -10,7 +10,13 @@
 #include "cglm/cam.h"
 #include "cglm/mat4.h"
 
+#ifdef __EMSCRIPTEN__
 #include <GLES2/gl2.h>
+#else
+#include <glad/glad.h>
+#endif
+
+
 #include <math.h>
 #include <vector>
 
@@ -176,9 +182,16 @@ void sprite_t::render()
     glm_mat4_identity( intern.model );
     glm_translate( intern.model, translate );
     glm_scale( intern.model, scale );
-    glm_translate( intern.model, vec3{ 0.5f, 0.5f, 0.0f } );
+    vec3 temp;
+    temp[ 0 ] = 0.5f;
+    temp[ 1 ] = 0.5f;
+    temp[ 2 ] = 0.0f;
+    glm_translate( intern.model, temp );
     glm_rotate( intern.model, rotation, axis );
-    glm_translate( intern.model, vec3{ -0.5f, -0.5f, 0.0f } );
+    temp[ 0 ] = -0.5f;
+    temp[ 1 ] = -0.5f;
+    temp[ 2 ] = 0.0f;
+    glm_translate( intern.model, temp );
 
     set_uniform( intern.shader1.proj, intern.proj );
     set_uniform( intern.shader1.model, intern.model );
@@ -203,13 +216,12 @@ static void update_camera()
 
     float rot = intern.camera_rotate;
 
+    vec3 eye{ intern.camera_x, intern.camera_y, 0.0f };
+    vec3 dir{ 0.0f, 0.0f, -1.0f };
+    vec3 up{ sin( rot ), cos( rot ), 0.0f };
+
     mat4 view;
-    glm_look(
-        vec3{ intern.camera_x, intern.camera_y, 0.0f }, // eye
-        vec3{ 0.0f, 0.0f, -1.0f },                      // dir
-        vec3{ sin( rot ), cos( rot ), 0.0f },           // up
-        view
-    );
+    glm_look( eye, dir, up, view );
     glm_mat4_mul( intern.proj, view, intern.proj );
 }
 

@@ -1,11 +1,10 @@
 SOURCES = src/*.cpp
 HEADERS = src/*.hpp
-LIBS = libs/*.a
-FLAGS = -std=c++20 -g -Ibuild
+FLAGS = -std=c++20 -g -Ibuild -Isrc
 RES_FILE = build/res.h
 
 
-build/main.html: ${SOURCES} ${HEADERS} bake
+web:
 	mkdir -p build
 	emcc       \
 		--shell-file shell.html \
@@ -14,26 +13,47 @@ build/main.html: ${SOURCES} ${HEADERS} bake
 		-sUSE_GLFW=3            \
 		${FLAGS}                \
 		${SOURCES}              \
-		${LIBS}                 \
+		src/platform/web.cpp    \
+		libs/web/*.a            \
 		-o build/index.html
+
+linux:
+	mkdir -p build
+	g++ ${FLAGS}                 \
+		${SOURCES}               \
+		src/platform/desktop.cpp \
+		src/platform/glad.c      \
+		-lglfw                   \
+		-o build/game
+
+windows:
+	mkdir -p build
+	x86_64-w64-mingw32-g++       \
+		-Isrc/platform           \
+		${FLAGS}                 \
+		${SOURCES}               \
+		src/platform/desktop.cpp \
+		src/platform/glad.c      \
+		libs/win32/*.a           \
+		-lgdi32                  \
+		-lssp                    \
+		-static                  \
+		-o build/game
+
+docker-emscripten:
+	docker run                           \
+		--rm                             \
+		-v $(shell pwd):/src             \
+		-u $(shell id -u):$(shell id -g) \
+		emscripten/emsdk                 \
+		make web
+
 
 bake:
 	mkdir -p build
 	rm -rf ${RES_FILE}
-
 	gcc tools/bake.c -o build/bake
 	./build/bake src/shaders.glsl >> ${RES_FILE}
-
-bench:
-	mkdir -p build
-	for source in ${SOURCES}; do \
-	  echo $${source};           \
-	  emcc                       \
-	    -c                       \
-		${FLAGS}                 \
-	    $${source}               \
-	    -o build/tmp.o;          \
-	done
 
 clean:
 	rm -rf build

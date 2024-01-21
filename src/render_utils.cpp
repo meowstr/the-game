@@ -3,9 +3,14 @@
 #include "logging.hpp"
 #include "res.h"
 
+#ifdef __EMSCRIPTEN__
 #include <GLES2/gl2.h>
+#else
+#include <glad/glad.h>
+#endif
 
 #include <sstream>
+#include <string.h>
 #include <string>
 #include <vector>
 

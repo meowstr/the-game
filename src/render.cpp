@@ -62,6 +62,7 @@ struct {
     float camera_x;
     float camera_y;
     float camera_zoom;
+    float camera_rotate;
 
     framebuffer_t fb1;
 
@@ -140,9 +141,10 @@ static void init_shader3()
         find_shader_string( "shader3_vertex" ),
         find_shader_string( "shader3_fragment" )
     );
-    intern.shader2.id = id;
-    intern.shader2.texture = find_uniform( id, "u_texture" );
-    intern.shader2.amount = find_uniform( id, "u_amount" );
+    intern.shader3.id = id;
+    intern.shader3.proj = find_uniform( id, "u_proj" );
+    intern.shader3.model = find_uniform( id, "u_model" );
+    intern.shader3.texture = find_uniform( id, "u_texture" );
 
     glBindAttribLocation( id, 0, "a_pos" );
     glBindAttribLocation( id, 1, "a_uv" );
@@ -199,14 +201,13 @@ static void update_camera()
         intern.proj
     );
 
-    static float rotation = 0.0f;
-    rotation += 0.03f * state.render_step;
+    float rot = intern.camera_rotate;
 
     mat4 view;
     glm_look(
         vec3{ intern.camera_x, intern.camera_y, 0.0f }, // eye
         vec3{ 0.0f, 0.0f, -1.0f },                      // dir
-        vec3{ sin( rotation ), cos( rotation ), 0.0f }, // up
+        vec3{ sin( rot ), cos( rot ), 0.0f },           // up
         view
     );
     glm_mat4_mul( intern.proj, view, intern.proj );
@@ -242,6 +243,7 @@ void render_init()
 
     init_shader1();
     init_shader2();
+    init_shader3();
 
     // init misc
 
@@ -408,8 +410,10 @@ void render()
         intern.camera_x = state.ball_x;
         intern.camera_y = state.ball_y;
         intern.camera_zoom -= state.render_step * 0.001f;
+        intern.camera_rotate += 0.03f * state.render_step;
 
         update_camera();
+
         push_ball_tail();
 
         render_room();

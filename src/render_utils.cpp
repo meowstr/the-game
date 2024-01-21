@@ -54,7 +54,10 @@ const char * find_shader_string( const char * name )
     }
 
     // no match
-    if ( matched_line == -1 ) return "";
+    if ( matched_line == -1 ) {
+        ERROR_LOG( "failed to find shader: %s", name );
+        return "";
+    }
 
     // match lines
     std::vector< std::string > matched_lines;
@@ -67,13 +70,13 @@ const char * find_shader_string( const char * name )
     // combine lines into one string
     std::stringstream ss;
     for ( std::string & line : matched_lines ) {
-        ss << line << "\n";
+        ss << line << '\n';
     }
 
     // TODO: lol yea i know
-    static std::string str = ss.str();
+    std::string * str = new std::string( ss.str() );
 
-    return str.c_str();
+    return str->c_str();
 }
 
 static int create_shader( int * out, int type, const char * source )

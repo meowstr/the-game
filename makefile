@@ -17,6 +17,15 @@ web: bake
 		libs/web/*.a            \
 		-o build/index.html
 
+linux-sdl: bake
+	mkdir -p build
+	g++ ${FLAGS}                 \
+		${SOURCES}               \
+		src/platform/desktop-sdl.cpp \
+		src/platform/glad.c      \
+		-lSDL2                   \
+		-o build/game
+
 linux: bake
 	mkdir -p build
 	g++ ${FLAGS}                 \
@@ -48,11 +57,20 @@ docker-emscripten:
 		emscripten/emsdk                 \
 		make web
 
+docker-steam:
+	docker run                           \
+		--rm                             \
+		--init                             \
+		-v $(shell pwd):/home             \
+		-u $(shell id -u):$(shell id -g) \
+        -w /home \
+        registry.gitlab.steamos.cloud/steamrt/sniper/sdk \
+        make linux-sdl
 
 bake:
 	mkdir -p build
+	gcc -std=c99 tools/bake.c -o build/bake
 	rm -rf ${RES_FILE}
-	gcc tools/bake.c -o build/bake
 	./build/bake src/shaders.glsl >> ${RES_FILE}
 
 clean:

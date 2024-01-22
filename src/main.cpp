@@ -138,15 +138,16 @@ static int collide_corner()
     return 0;
 }
 
-static void tick_ball_asymmptote() {
+static void tick_ball_asymmptote()
+{
     if ( state.block_count != 1 ) return;
-    
+
     float dx = state.block_rect_list[ 0 ].x - state.ball_x;
     float dy = state.block_rect_list[ 0 ].y - state.ball_y;
 
     float dist = sqrt( dx * dx + dy * dy );
 
-    state.ball_speed = clamp( (dist - 20.0f) * 1.0f, 0.0f, 200.0f );
+    state.ball_speed = clamp( ( dist - 20.0f ) * 1.0f, 0.0f, 200.0f );
 }
 
 static void tick_ball()
@@ -191,7 +192,10 @@ static void tick_ball()
 
     state.paddle_touched = collide_ball( state.paddle_rect );
 
-    if ( state.paddle_touched ) state.ball_hit = 1;
+    if ( state.paddle_touched ) {
+        state.ball_hit = 1;
+        hardware_rumble();
+    }
 
     for ( int i = 0; i < state.block_count; i++ ) {
         int & b_state = state.block_state_list[ i ];
@@ -256,7 +260,6 @@ static void init()
 
     for ( int r = 0; r < rows; r++ ) {
         for ( int c = 0; c < cols; c++ ) {
-
             rect_t rect{
                 (float) c * width,
                 (float) r * height,
@@ -294,6 +297,8 @@ int main()
     render_init();
 
     hardware_set_loop( loop );
+
+    hardware_destroy();
 
     return 0;
 }

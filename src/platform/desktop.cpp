@@ -114,3 +114,7 @@ float hardware_time()
 {
     return glfwGetTime();
 }
+
+void hardware_rumble()
+{
+}

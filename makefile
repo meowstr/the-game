@@ -24,7 +24,7 @@ linux-sdl: bake
 		src/platform/desktop-sdl.cpp \
 		src/platform/glad.c      \
 		-lSDL2                   \
-		-o build/game
+		-o build/meow
 
 linux: bake
 	mkdir -p build
@@ -33,7 +33,7 @@ linux: bake
 		src/platform/desktop.cpp \
 		src/platform/glad.c      \
 		-lglfw                   \
-		-o build/game
+		-o build/meow
 
 windows: bake
 	mkdir -p build
@@ -47,7 +47,7 @@ windows: bake
 		-lgdi32                  \
 		-lssp                    \
 		-static                  \
-		-o build/game
+		-o build/meow
 
 docker-emscripten:
 	docker run                           \

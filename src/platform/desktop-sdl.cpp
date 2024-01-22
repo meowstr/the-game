@@ -8,16 +8,27 @@
 
 static struct {
     SDL_Window * window = nullptr;
-    SDL_GLContext context;
+    SDL_GLContext context = nullptr;
+    SDL_Joystick * joy1 = nullptr;
     int width = 1280;
     int height = 800;
 } intern;
 
 int hardware_init()
 {
-    if ( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
+    if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 ) {
         ERROR_LOG( "failed to initialize SDL2" );
         return 1;
+    }
+
+    SDL_JoystickEventState( SDL_ENABLE );
+
+    INFO_LOG( "found %d joystick(s)", SDL_NumJoysticks() );
+
+    intern.joy1 = SDL_JoystickOpen( 0 );
+
+    if ( intern.joy1 ) {
+        INFO_LOG( "found a joystick" );
     }
 
     SDL_GL_LoadLibrary( nullptr );
@@ -65,6 +76,7 @@ int hardware_init()
 void hardware_destroy()
 {
     SDL_DestroyWindow( intern.window );
+    SDL_JoystickClose( intern.joy1 );
     SDL_Quit();
 }
 
@@ -99,12 +111,23 @@ float hardware_x_axis()
 
     const Uint8 * keys = SDL_GetKeyboardState( nullptr );
 
-    if ( keys[ SDLK_a ] ) {
+    if ( keys[ SDL_SCANCODE_A ] ) {
         dx -= 1.0f;
     }
 
-    if ( keys[ SDLK_d ] ) {
+    if ( keys[ SDL_SCANCODE_D ] ) {
         dx += 1.0f;
+    }
+
+    if ( intern.joy1 ) {
+        Sint16 joy_dx = SDL_JoystickGetAxis( intern.joy1, 0 );
+
+        if ( joy_dx > 10000 ) {
+            dx += 1.0f;
+        }
+        if ( joy_dx < -10000 ) {
+            dx -= 1.0f;
+        }
     }
 
     return dx;
@@ -113,4 +136,11 @@ float hardware_x_axis()
 float hardware_time()
 {
     return SDL_GetTicks() / 1000.0f;
+}
+
+void hardware_rumble()
+{
+    if ( intern.joy1 ) {
+        SDL_JoystickRumble( intern.joy1, 0x8000, 0x8000, 100 );
+    }
 }

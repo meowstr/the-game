@@ -1,7 +1,7 @@
 #include "render_utils.hpp"
 
 #include "logging.hpp"
-#include "res.h"
+#include "res.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <GLES2/gl2.h>
@@ -31,8 +31,8 @@ static int match_any_shader_line( const char * line )
 // TODO: make this less c++ dependent?
 const char * find_shader_string( const char * name )
 {
-    const unsigned char * shaders = src_shaders_glsl;
-    int len = sizeof( src_shaders_glsl );
+    const unsigned char * shaders = res::shaders_glsl().data;
+    int len = res::shaders_glsl().size;
 
     // split into lines
     std::vector< std::string > lines;
@@ -314,4 +314,71 @@ void framebuffer_t::init( int width, int height )
 
     id = fbo;
     texture = local_texture;
+}
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+int load_texture( unsigned char * file_data, int size )
+{
+    unsigned int texture;
+    glGenTextures( 1, &texture );
+    glBindTexture( GL_TEXTURE_2D, texture );
+
+    int error = 0;
+    // generate a texture
+    glBindTexture( GL_TEXTURE_2D, texture );
+    // set the texture wrapping/filtering options (on the currently bound
+    // texture object)
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    // glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    // glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    //  load and generate the texture
+    int width, height, nrChannels;
+    unsigned char * data = stbi_load_from_memory(
+        file_data,
+        size,
+        &width,
+        &height,
+        &nrChannels,
+        0
+    );
+    if ( data ) {
+        glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+        if ( nrChannels == 3 ) {
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGB,
+                width,
+                height,
+                0,
+                GL_RGB,
+                GL_UNSIGNED_BYTE,
+                data
+            );
+        } else {
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA,
+                width,
+                height,
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                data
+            );
+        }
+        // glGenerateMipmap( GL_TEXTURE_2D );
+    } else {
+        ERROR_LOG( "failed to load texture" );
+        error = 1;
+    }
+    stbi_image_free( data );
+
+    return texture;
 }

@@ -27,10 +27,6 @@ int hardware_init()
 
     intern.joy1 = SDL_JoystickOpen( 0 );
 
-    if ( intern.joy1 ) {
-        INFO_LOG( "found a joystick" );
-    }
-
     SDL_GL_LoadLibrary( nullptr );
 
     // glfwWindowHint( GLFW_CLIENT_API, GLFW_OPENGL_ES_API );

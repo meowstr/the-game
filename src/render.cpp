@@ -3,6 +3,7 @@
 #include "color.hpp"
 #include "hardware.hpp"
 #include "render_utils.hpp"
+#include "res.hpp"
 #include "shape.hpp"
 #include "state.hpp"
 
@@ -16,7 +17,6 @@
 #include <glad/glad.h>
 #endif
 
-
 #include <math.h>
 #include <vector>
 
@@ -25,13 +25,15 @@ struct sprite_t {
     color_t color;
     float alpha = 1.0f;
     float rotation = 0.0f;
+    int texture = -1;
 
     void render();
 };
 
 // render state
 struct {
-    vbuffer_t quad_buffer;
+    vbuffer_t quad_pos_buffer;
+    vbuffer_t quad_uv_buffer;
 
     vbuffer_t fb_pos_buffer;
     vbuffer_t fb_uv_buffer;
@@ -53,8 +55,11 @@ struct {
         int id;
         int proj;
         int model;
+        int color;
         int texture;
     } shader3;
+
+    int miku_texture;
 
     mat4 model;
     mat4 proj;
@@ -150,6 +155,7 @@ static void init_shader3()
     intern.shader3.id = id;
     intern.shader3.proj = find_uniform( id, "u_proj" );
     intern.shader3.model = find_uniform( id, "u_model" );
+    intern.shader3.color = find_uniform( id, "u_color" );
     intern.shader3.texture = find_uniform( id, "u_texture" );
 
     glBindAttribLocation( id, 0, "a_pos" );
@@ -193,12 +199,24 @@ void sprite_t::render()
     temp[ 2 ] = 0.0f;
     glm_translate( intern.model, temp );
 
-    set_uniform( intern.shader1.proj, intern.proj );
-    set_uniform( intern.shader1.model, intern.model );
-    set_uniform( intern.shader1.color, color4 );
+    if ( texture == -1 ) {
+        glUseProgram( intern.shader1.id );
+        set_uniform( intern.shader1.proj, intern.proj );
+        set_uniform( intern.shader1.model, intern.model );
+        set_uniform( intern.shader1.color, color4 );
+        intern.quad_pos_buffer.enable( 0 );
+    } else {
+        glUseProgram( intern.shader3.id );
+        glBindTexture( GL_TEXTURE_2D, intern.miku_texture );
+        set_uniform( intern.shader3.proj, intern.proj );
+        set_uniform( intern.shader3.model, intern.model );
+        set_uniform( intern.shader3.color, color4 );
+        set_uniform( intern.shader3.texture, 0 );
+        intern.quad_pos_buffer.enable( 0 );
+        intern.quad_uv_buffer.enable( 1 );
+    }
 
-    intern.quad_buffer.enable( 0 );
-    glDrawArrays( GL_TRIANGLES, 0, intern.quad_buffer.element_count );
+    glDrawArrays( GL_TRIANGLES, 0, intern.quad_pos_buffer.element_count );
 }
 
 static void update_camera()
@@ -238,8 +256,11 @@ void render_init()
 
     // init vertex buffers
 
-    intern.quad_buffer.init( 3 );
-    intern.quad_buffer.set( quad_data, 6 );
+    intern.quad_pos_buffer.init( 3 );
+    intern.quad_pos_buffer.set( quad_data, 6 );
+
+    intern.quad_uv_buffer.init( 2 );
+    intern.quad_uv_buffer.set( fb_uv_data, 6 );
 
     intern.fb_pos_buffer.init( 2 );
     intern.fb_pos_buffer.set( fb_pos_data, 6 );
@@ -256,6 +277,11 @@ void render_init()
     init_shader1();
     init_shader2();
     init_shader3();
+
+    // init textures
+
+    intern.miku_texture =
+        load_texture( res::miku_jpg().data, res::miku_jpg().size );
 
     // init misc
 
@@ -345,7 +371,8 @@ static void render_room()
 
     sprite_t bg_fill;
     bg_fill.rect = { 0.0f, 0.0f, (float) state.room_w, (float) state.room_h };
-    bg_fill.color = { 0.0f, 0.0f, 0.0f };
+    bg_fill.color = { 0.1f, 0.1f, 0.1f };
+    bg_fill.texture = intern.miku_texture;
 
     sprite_t bg_outline;
     bg_outline.rect = bg_fill.rect;
@@ -421,7 +448,7 @@ void render()
 
         intern.camera_x = state.ball_x;
         intern.camera_y = state.ball_y;
-        intern.camera_zoom -= state.render_step * 0.001f;
+        intern.camera_zoom -= state.render_step * 0.005f;
         intern.camera_rotate += 0.03f * state.render_step;
 
         update_camera();

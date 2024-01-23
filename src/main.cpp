@@ -194,7 +194,6 @@ static void tick_ball()
 
     if ( state.paddle_touched ) {
         state.ball_hit = 1;
-        hardware_rumble();
     }
 
     for ( int i = 0; i < state.block_count; i++ ) {
@@ -216,6 +215,10 @@ static void tick_ball()
                 break;
             }
         }
+    }
+
+    if ( state.ball_hit ) {
+        hardware_rumble();
     }
 }
 
@@ -249,8 +252,8 @@ static void init()
 {
     init_block_table();
 
-    state.room_w = 640;
-    state.room_h = 480;
+    state.room_w = 512;
+    state.room_h = 512;
 
     int cols = 10;
     int rows = 6;

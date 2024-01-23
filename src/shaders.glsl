@@ -82,8 +82,9 @@ void main()
 #version 100
 precision lowp float;
 uniform sampler2D u_texture;
+uniform vec4 u_color;
 varying vec2 v_uv;
 void main()
 {
-    gl_FragColor = texture2D( u_texture, v_uv );
+    gl_FragColor = u_color * texture2D( u_texture, v_uv );
 }

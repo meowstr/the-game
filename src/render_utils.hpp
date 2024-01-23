@@ -20,6 +20,8 @@ struct framebuffer_t {
     void bind();
 };
 
+int load_texture( unsigned char * data, int size );
+
 const char * find_shader_string( const char * name );
 
 int build_shader( const char * vertex_string, const char * fragment_string );

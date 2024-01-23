@@ -4,6 +4,41 @@ i will blindly merge any pull request without code review. feel free to contribu
 
 an up-to-date view of the game can be found here (auto-generated): https://meowstr.github.io/the-game/
 
+Building
+--------
+Sorry visual studio users... this project uses a Makefile. Install a WSL and build for Windows.
+
+### WASM
+If you don't want to install any build tools, and use the same environment as Github Actions run:
+```
+make docker-emscripten
+```
+If you want to use your own build environment run:
+```
+make web
+```
+### Linux
+For GLFW backend:
+```
+make linux
+```
+For SDL2 backend (includes joystick support):
+```
+make linux-sdl
+```
+
+### Windows
+Only GLFW is supported for Windows currently (though SDL2 support wouldn't be hard). Run:
+```
+make windows
+```
+
+### Steam Runtime (Sniper) / Steam Deck
+For a Steam Runtime compatible (and Steam Deck compatible) build, run:
+```
+make docker-steam
+```
+
 Rules
 -----
 - dont copy paste code into this repo

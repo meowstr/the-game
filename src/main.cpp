@@ -1,3 +1,4 @@
+#include "audio.hpp"
 #include "hardware.hpp"
 #include "logging.hpp"
 #include "render.hpp"
@@ -297,9 +298,13 @@ int main()
 
     init();
 
+    audio_init();
+
     render_init();
 
     hardware_set_loop( loop );
+
+    audio_destroy();
 
     hardware_destroy();
 

@@ -5,10 +5,4 @@ struct res_t {
     int size;
 };
 
-namespace res {
-
-res_t shaders_glsl();
-res_t miku_jpg();
-
-}
-
+res_t find_res( const char * name );

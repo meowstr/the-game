@@ -280,8 +280,8 @@ void render_init()
 
     // init textures
 
-    intern.miku_texture =
-        load_texture( res::miku_jpg().data, res::miku_jpg().size );
+    res_t miku = find_res( "miku.jpg" );
+    intern.miku_texture = load_texture( miku.data, miku.size );
 
     // init misc
 

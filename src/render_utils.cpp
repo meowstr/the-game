@@ -31,8 +31,9 @@ static int match_any_shader_line( const char * line )
 // TODO: make this less c++ dependent?
 const char * find_shader_string( const char * name )
 {
-    const unsigned char * shaders = res::shaders_glsl().data;
-    int len = res::shaders_glsl().size;
+    res_t shader_res = find_res( "shaders.glsl" );
+    const unsigned char * shaders = shader_res.data;
+    int len = shader_res.size;
 
     // split into lines
     std::vector< std::string > lines;

@@ -1,1 +1,3 @@
 build
+libs/linux/res.o
+libs/win32/res.o

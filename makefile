@@ -4,41 +4,46 @@ FLAGS = -std=c++20 -g -Ibuild -Isrc
 RES_FILE = build/res_data.h
 
 
-web: bake
+web:
 	mkdir -p build
 	emcc                      \
 	  --shell-file shell.html \
 	  -sMIN_WEBGL_VERSION=2   \
 	  -sMAX_WEBGL_VERSION=2   \
 	  -sUSE_GLFW=3            \
+	  -sALLOW_MEMORY_GROWTH   \
+	  -sTOTAL_MEMORY=33554432 \
 	  ${FLAGS}                \
 	  ${SOURCES}              \
 	  src/platform/web.cpp    \
 	  libs/web/*.a            \
+	  libs/web/res.o          \
 	  -lopenal                \
 	  -o build/index.html
 
-linux-sdl: bake
+linux-sdl:
 	mkdir -p build
 	g++ ${FLAGS}                   \
 	  ${SOURCES}                   \
 	  src/platform/desktop-sdl.cpp \
 	  src/platform/glad.c          \
+	  libs/linux/res.o             \
 	  -lSDL2                       \
 	  -lopenal                     \
 	  -o build/meow
 
-linux: bake
+linux:
 	mkdir -p build
 	g++ ${FLAGS}               \
 	  ${SOURCES}               \
 	  src/platform/desktop.cpp \
 	  src/platform/glad.c      \
+	  libs/linux/res.o         \
 	  -lglfw                   \
 	  -lopenal                 \
 	  -o build/meow
 
-windows: bake
+windows:
 	mkdir -p build
 	x86_64-w64-mingw32-g++     \
 	  -Ilibs/win32             \
@@ -48,6 +53,8 @@ windows: bake
 	  src/platform/desktop.cpp \
 	  src/platform/glad.c      \
 	  libs/win32/*.a           \
+	  libs/win32/*.lib         \
+	  libs/win32/res.o         \
 	  -lgdi32                  \
 	  -lssp                    \
 	  -lwinmm                  \
@@ -83,9 +90,22 @@ docker-android:
 bake:
 	mkdir -p build
 	gcc -std=c99 tools/bake.c -o build/bake
-	rm -rf ${RES_FILE}
-	./build/bake src/shaders.glsl >> ${RES_FILE}
-	./build/bake res/miku.jpg >> ${RES_FILE}
+	./build/bake        \
+	  src/shaders.glsl  \
+	  res/*.png         \
+	  res/*.fnt         \
+	  res/*.wav         \
+	  res/*.jpg         \
+	  > ${RES_FILE}
+
+bake-web: bake
+	emcc -c ${FLAGS} tools/res.cpp -o libs/web/res.o
+
+bake-windows: bake
+	x86_64-w64-mingw32-g++ -c ${FLAGS} tools/res.cpp -o libs/win32/res.o
+
+bake-linux: bake
+	g++ -c ${FLAGS} tools/res.cpp -o libs/linux/res.o
 
 clean:
 	rm -rf build

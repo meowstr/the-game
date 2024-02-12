@@ -2,6 +2,7 @@
 #include "hardware.hpp"
 #include "logging.hpp"
 #include "render.hpp"
+#include "res.hpp"
 #include "state.hpp"
 
 #include <algorithm>
@@ -170,18 +171,21 @@ static void tick_ball()
 
     if ( state.ball_x < 0.0f ) {
         if ( collide_corner() ) return;
+        state.ball_hit = 1;
         state.ball_x = 0.0f;
         state.ball_dir_x *= -1;
     }
 
     if ( state.ball_x > state.room_w ) {
         if ( collide_corner() ) return;
+        state.ball_hit = 1;
         state.ball_x = state.room_w;
         state.ball_dir_x *= -1;
     }
 
     if ( state.ball_y < 0.0f ) {
         if ( collide_corner() ) return;
+        state.ball_hit = 1;
         state.ball_y = 0.0f;
         state.ball_dir_y *= -1;
     }
@@ -236,6 +240,8 @@ static void loop()
     tick_paddle();
     tick_ball();
     tick_blocks();
+
+    audio_tick();
 
     render();
 }
